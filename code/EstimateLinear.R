@@ -8,10 +8,12 @@ if (!require(pacman)) {
 
 # Load Packages
 p_load(tidyverse, rstan, shinystan, bayesplot, bridgesampling)
+
 # Import data
 #-----------------------------------------------
 
 df <- read_csv("data/metadata.csv")
+df %>% view()
 
 summary(df)
 
@@ -31,7 +33,8 @@ options(mc.cores = parallel::detectCores())
 df <- df %>%
 #	filter(wlfresh == 1) %>%
 	mutate(q0 = q0/1000,
-		   q1 = q1/1000)
+		   q1 = q1/1000) %>% view()
+
 
 df %>%
 	group_by(canada) %>%
@@ -80,6 +83,7 @@ df <- df %>%
 		   lnwtp2 = lnwtp - log(q1- q0),
 		   q_change = q1 - q0,
 		   us = ifelse(canada == 1, 0, 1))
+
 lm1 <- lm(lnwtp2 ~ q01 + lnyear + lninc + us + 
 		  	local + 
 		  	prov + reg + cult + 
