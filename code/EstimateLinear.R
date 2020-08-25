@@ -12,7 +12,7 @@ p_load(tidyverse, rstan, shinystan, bayesplot, bridgesampling)
 # Import data
 #-----------------------------------------------
 
-df <- read_csv("data/metadata.csv")
+df <- read.csv("data/finalData_24_8.csv")
 df %>% view()
 
 summary(df)
@@ -61,12 +61,12 @@ data_stan <- list(N=nrow(df),
 				  x=cbind(rep(1,nrow(df)),as.matrix(df[, 4:6]),
 				  		as.matrix(df[, 10:14]),
 				  		as.matrix(df[, 17:18]), 
-						as.matrix(df[, 24])), # add for canada dummy
+						as.matrix(df[, 23])), # add for canada dummy
 				 q0 = df$q0,
 				 q1 = df$q1)
 
 data_stan$K <- ncol(data_stan$x)
-
+ncol(df)
 
 init <- list(gamma = 0.08,
 		#	 beta = c(-.5, 0, .2, -0.4, -0.7, 3.1, -2.2, 1.6, -.3, 1.1, -0.02, 1.5),
