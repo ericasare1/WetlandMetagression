@@ -37,3 +37,13 @@ model {
   sigma ~ inv_gamma(0.5, 0.5);
   y ~ normal(v, sigma);
 }
+generated quantities {
+  vector[N] y_new;
+  for (n in 1:N)
+    y_new[n] = normal_rng(x[n] * beta + gamma*q01[n], sigma);
+}
+
+
+
+
+
