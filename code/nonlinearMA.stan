@@ -15,7 +15,7 @@ parameters {
   real<lower=0> sigma;
 }
 
-transformed parameters { 
+transformed parameters {
 	vector[N] v;
 
   v = x * beta + log((exp(gamma * q1) - exp(gamma * q0)) / gamma);
@@ -27,11 +27,3 @@ model {
   sigma ~ inv_gamma(0.5, 0.5);
   lwtp ~ normal(v, sigma);
 }
-
-generated quantities {
-  vector[N] y_new;
-  for (n in 1:N)
-    y_new[n] = normal_rng(x[n] * beta + log((exp(gamma * q1[n]) - exp(gamma * q0[n])) / gamma), sigma);
-}
-
-

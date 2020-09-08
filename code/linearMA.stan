@@ -3,7 +3,7 @@ data {
   int<lower=0> N; // number of observations
   int<lower=0> K; // number of predictors
   int<lower=0> S; // number of studies
-  vector[N] lwtp; // logged wtp
+  vector[N] lwtp; // logged wtp: response variable
   matrix[N, K] x; // matrix of predictors
   vector[N] q0; // SQ levels
   vector[N] q1; // Policy levels
@@ -30,20 +30,20 @@ transformed parameters {
 
   v = x * beta + gamma * q01;
 }
-
+ 
 model {
+  // Prior
   beta ~ normal(0,10);
   gamma ~ normal(0,10);
   sigma ~ inv_gamma(0.5, 0.5);
+  //likelihood contribution
   y ~ normal(v, sigma);
 }
+
 generated quantities {
-  vector[N] y_new;
-  for (n in 1:N)
-    y_new[n] = normal_rng(x[n] * beta + gamma*q01[n], sigma);
+  real y_rep[N];
+  for (n in 1:N) { 
+        y_rep[n] = normal_rng(x[n] * beta + gamma * q01[n], sigma);
+  }
+  
 }
-
-
-
-
-
