@@ -150,8 +150,10 @@ print(ma_nonlinear, digits_summary = 3)
 print(ma_nonlinear_freshwl, digits_summary = 3)
 print(ma_nonlinear_freshwl_can, digits_summary = 3)
 print(ma_nonlinear_whole_can, digits_summary = 3)
+
 #m <- apply(ext_fit$y_rep, 2, mean)----for obtaining predicted values
-#Preparing estimated models for LOO Cross Validation checks
+#Preparing estimated models for LOO Cross Validation checks: https://mc-stan.org/loo/articles/loo2-example.html
+ 
 loo_whole_lin <- loo(ma_linear, save_psis = TRUE)
 loo_wh_fresh_lin <- loo(ma_linear_freshwl, save_psis = TRUE)
 loo_fresh_can_lin <- loo(ma_linear_freshwl_can, save_psis = TRUE)
@@ -212,12 +214,70 @@ plot(loo_wh_fresh_nonlin)
 plot(loo_fresh_can_nonlin)
 plot(loo_wh_can_nonlin)
 
-#Marginal posterior predictive checks
-ppc_loo_pit_overlay(
+#Marginal posterior predictive checks_Nonlinear
+whole_nonlin <- ppc_loo_pit_overlay(
 	y = data_stan_whole$lwtp,
-	yrep = m1,
-	lw = weights(loo1$psis_object)
+	yrep = y_rep_wh_nonlin,
+	lw = weights(loo_whole_nonlin$psis_object)
 )
+
+whole_fresh_nonlin <- ppc_loo_pit_overlay(
+	y = data_stan_freshwl$lwtp,
+	yrep = y_rep_wh_fresh_nonlin,
+	lw = weights(loo_wh_fresh_nonlin$psis_object)
+)
+
+fresh_canada_nonlin <- ppc_loo_pit_overlay(
+	y = data_stan_freshwl_can$lwtp,
+	yrep = y_rep_fresh_can_nonlin,
+	lw = weights(loo_fresh_can_nonlin$psis_object)
+)
+
+whole_can_nonlin <- ppc_loo_pit_overlay(
+	y = data_stan_wholel_can$lwtp,
+	yrep = y_rep_wh_can_nonlin,
+	lw = weights(loo_fresh_can_nonlin$psis_object)
+)
+
+#linear
+#Dependent Variable in linear model for posterior check
+#y = lwtp - log(q1- q0)
+df1 <- df %>% mutate(y = lnwtp - log(q1-q0))
+df_freshwl1 <- df1 %>% filter(wlfresh ==1)
+df_canada_fresh1 <- df_freshwl1 %>% filter(canada ==1)
+df_canada1 <- df1 %>% filter(canada ==1)
+
+whole_lin <- ppc_loo_pit_overlay(
+	y = df1$y, #change the dep variable
+	yrep = y_rep_wh_lin,
+	lw = weights(loo_whole_lin$psis_object)
+)
+
+whole_fresh_lin <- ppc_loo_pit_overlay(
+	y = df_freshwl1$y,
+	yrep = y_rep_wh_fresh_lin,
+	lw = weights(loo_wh_fresh_lin$psis_object)
+)
+
+fresh_canada_lin <- ppc_loo_pit_overlay(
+	y = df_canada_fresh1$y,
+	yrep = y_rep_fresh_can_lin,
+	lw = weights(loo_fresh_can_lin$psis_object)
+)
+
+whole_can_lin <- ppc_loo_pit_overlay(
+	y = df_canada1$y,
+	yrep = y_rep_wh_can_lin,
+	lw = weights(loo_fresh_can_lin$psis_object)
+)
+
+#Comparing the models on expected log predictive density
+Lnear_model_comparison <- loo_compare(loo_whole_lin,loo_wh_fresh_lin,loo_fresh_can_lin,loo_fresh_can_lin)
+
+
+
+
+
 
 
 #MCMC diagnostics
