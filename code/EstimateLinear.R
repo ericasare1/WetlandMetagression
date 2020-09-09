@@ -42,9 +42,9 @@ df <- df %>%
 		   us = ifelse(canada == 1, 0, 1))
 
 #scaling predictor variables except binary variables
-str(df)
-df_scaled <- df %>% mutate_at(c("lnwtp", "lnyear", "wlfresh", "lninc","q0", "q1" ), ~(scale(.) %>% as.vector))
-df_scaled %>% View()
+#str(df)
+#df_scaled <- df %>% mutate_at(c("lnyear", "wlfresh", "lninc","q0", "q1" ), ~(scale(.) %>% as.vector))
+#df_scaled %>% View()
 
 #Graph of lnacres vrs lnwtp
 df %>%
@@ -60,6 +60,15 @@ df %>%
 	geom_text(aes(label=canada),hjust=0, vjust=0)
 
 summary(df)
+
+#Creating different datafranes
+df_whole <- df
+df_freshwl <- df %>% filter(wlfresh ==1)
+df_canada_fresh <- df_freshwl %>% filter(canada ==1)
+df_us_fresh <- df_freshwl %>% filter(canada ==0)
+df_canada <- df %>% filter(canada ==1)
+df_us <- df %>% filter(canada ==0)
+
 
 #Linear Regression (Frequentist) estimations
 lm1 <- lm(lnwtp2 ~ q01 + lnyear + lninc + us + 
@@ -84,30 +93,12 @@ lm1 <- lm(lnwtp ~ q_change + lnyear + lninc + #sagulf + nmw +
 		  	volunt + lumpsum + 
 		  	forest + canada, data  = df)
 summary(lm1)
-x=cbind(rep(1,nrow(df)),as.matrix(df[, 4:6]),
-		as.matrix(df[, 10:14]),
-		as.matrix(df[, 17:18]), 
-		as.matrix(df[, 24]))
-# Setting Rstan data
-n_ind <- n_distinct(df$studyid)
 
-data_stan <- list(N=nrow(df_scaled),
-				  S = n_ind,
-				  lwtp=df$lnwtp,
-#				  x=as.matrix(df[,6]),
-				  x=cbind(rep(1,nrow(df)),as.matrix(df[, 4:6]),
-				  		as.matrix(df[, 10:14]),
-				  		as.matrix(df[, 17:18]), 
-						as.matrix(df[, 24])), # add for canada dummy
-				 q0 = df$q0,
-				 q1 = df$q1)
-
-data_stan$K <- ncol(data_stan$x)
 
 
 init <- list(gamma = 0.08,
 		#	 beta = c(-.5, 0, .2, -0.4, -0.7, 3.1, -2.2, 1.6, -.3, 1.1, -0.02, 1.5),
-			 sigma = . 5)
+			 sigma = .5)
 
 init <- list(init = init,
 			 init = init,
@@ -117,7 +108,34 @@ init <- list(init = init,
 # Linear model (M3c from Moeltner paper)
 ma_linear <- stan("code/linearMA.stan", 
 					 pars = c("beta", "sigma", "gamma"),init = init,
-					 data=data_stan, iter=n_iter, chains=n_chains)#, seed = seed)
+					 data=data_stan_whole, iter=n_iter, chains=n_chains)#, seed = seed)
+ma_linear_freshwl <- stan("code/linearMA.stan", 
+				  pars = c("beta", "sigma", "gamma"),init = init,
+				  data=data_stan_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
+ma_linear_freshwl_can <- stan("code/linearMA.stan", 
+						  pars = c("beta", "sigma", "gamma"),init = init,
+						  data=data_stan_freshwl_can, iter=n_iter, chains=n_chains)#, seed = seed)
+ma_linear_whole_can <- stan("code/linearMA.stan", 
+							  pars = c("beta", "sigma", "gamma"),init = init,
+							  data=data_stan_wholel_can, iter=n_iter, chains=n_chains)#, seed = seed)
+
+#summary of results
+print(ma_linear, digits_summary = 3)
+print(ma_linear_freshwl, digits_summary = 3)
+print(ma_linear_freshwl_can, digits_summary = 3)
+print(ma_linear_whole_can, digits_summary = 3)
+
+#MCMC diagnostics
+stan_trace(ma_linear)
+#Autocorrelation
+stan_ac(ma_linear)
+#Raftery Diagnostics
+library(LaplacesDemon)
+raftery.diag(ma_linear)
+#Rhat
+stan_rhat(ma_linear)
+#effective SS
+stan_ess(ma_linear)
 
 #Predictions
 ext_fit <- extract(ma_linear)
@@ -126,6 +144,7 @@ ext_fit <- extract(ma_linear)
 apply(ext_fit$y_rep, 2, median)
 ## [1] 0.75
 
+loo(ma_linear)
 
 beta_post <- ext_fit$beta
 min(beta_post)
@@ -167,7 +186,8 @@ for(i in 1:dim(ext_pred$y_test)[2]) {
 
 
 ext_ract = extract(ma_linear)
-
+#summary of results
+print(ma_linear, digits_summary = 3)
 #MCMC diagnostics
 stan_trace(ma_linear)
 #Autocorrelation

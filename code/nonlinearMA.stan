@@ -21,9 +21,21 @@ transformed parameters {
   v = x * beta + log((exp(gamma * q1) - exp(gamma * q0)) / gamma);
  }
 
-model {
+model { 
   beta ~ normal(0,10);
   gamma ~ normal(0,10);
   sigma ~ inv_gamma(0.5, 0.5);
   lwtp ~ normal(v, sigma);
+}
+
+generated quantities {
+  real y_rep[N];
+  vector[N] log_lik;
+  
+  for (n in 1:N) { 
+        y_rep[n] = normal_rng(x[n] * beta + log((exp(gamma * q1[n]) - exp(gamma * q0[n])) / gamma), sigma);
+        
+        log_lik[n] = normal_lpdf(lwtp[n] | x[n] * beta + log((exp(gamma * q1[n]) - exp(gamma * q0[n])) / gamma), sigma);
+  }
+  
 }
