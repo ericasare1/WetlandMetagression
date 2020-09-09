@@ -150,12 +150,76 @@ print(ma_nonlinear, digits_summary = 3)
 print(ma_nonlinear_freshwl, digits_summary = 3)
 print(ma_nonlinear_freshwl_can, digits_summary = 3)
 print(ma_nonlinear_whole_can, digits_summary = 3)
+#m <- apply(ext_fit$y_rep, 2, mean)----for obtaining predicted values
+#Preparing estimated models for LOO Cross Validation checks
+loo_whole_lin <- loo(ma_linear, save_psis = TRUE)
+loo_wh_fresh_lin <- loo(ma_linear_freshwl, save_psis = TRUE)
+loo_fresh_can_lin <- loo(ma_linear_freshwl_can, save_psis = TRUE)
+loo_wh_can_lin <- loo(ma_linear_whole_can, save_psis = TRUE)
+
+loo_whole_nonlin <- loo(ma_nonlinear, save_psis = TRUE)
+loo_wh_fresh_nonlin <- loo(ma_nonlinear_freshwl, save_psis = TRUE)
+loo_fresh_can_nonlin <- loo(ma_nonlinear_freshwl_can, save_psis = TRUE)
+loo_wh_can_nonlin <- loo(ma_nonlinear_whole_can, save_psis = TRUE)
+
+#extracting predicted dependent values for the models
+
+fit_wh_lin <- extract(ma_linear)
+y_rep_wh_lin <- fit_wh_lin$y_rep
+
+fit_wh_fresh_lin <- extract(ma_linear_freshwl)
+y_rep_wh_fresh_lin <- fit_wh_fresh_lin$y_rep
+
+fit_fresh_can_lin <- extract(ma_linear_freshwl_can)
+y_rep_fresh_can_lin <- fit_fresh_can_lin$y_rep
+
+fit_wh_can_lin <- extract(ma_linear_whole_can)
+y_rep_wh_can_lin <- fit_wh_can_lin$y_rep
+
+#nonlinear models
+fit_wh_nonlin <- extract(ma_nonlinear)
+y_rep_wh_nonlin <- fit_wh_nonlin$y_rep
+
+fit_wh_fresh_nonlin <- extract(ma_nonlinear_freshwl)
+y_rep_wh_fresh_nonlin <- fit_wh_fresh_nonlin$y_rep
+
+fit_fresh_can_nonlin <- extract(ma_nonlinear_freshwl_can)
+y_rep_fresh_can_nonlin <- fit_fresh_can_nonlin$y_rep
+
+fit_wh_can_nonlin <- extract(ma_nonlinear_whole_can)
+y_rep_wh_can_nonlin <- fit_wh_can_nonlin$y_rep
 
 library(loo)
-log_lik_ <- extract_log_lik(ma_linear, merge_chains = FALSE)
-loo(ma_linear)
+print(loo_whole_lin)
+print(loo_wh_fresh_lin)
+print(loo_fresh_can_lin)
+print(loo_wh_can_lin)
 
-str(extract(ma_linear))
+print(loo_whole_nonlin)
+print(loo_wh_fresh_nonlin)
+print(loo_fresh_can_nonlin)
+print(loo_wh_can_nonlin)
+
+
+#Plotting Pareto 𝑘k diagnostics
+plot(loo_whole_lin)
+plot(loo_wh_fresh_lin)
+plot(loo_fresh_can_lin)
+plot(loo_wh_can_lin)
+
+plot(loo_whole_nonlin)
+plot(loo_wh_fresh_nonlin)
+plot(loo_fresh_can_nonlin)
+plot(loo_wh_can_nonlin)
+
+#Marginal posterior predictive checks
+ppc_loo_pit_overlay(
+	y = data_stan_whole$lwtp,
+	yrep = m1,
+	lw = weights(loo1$psis_object)
+)
+
+
 #MCMC diagnostics
 stan_trace(ma_linear)
 #Autocorrelation
