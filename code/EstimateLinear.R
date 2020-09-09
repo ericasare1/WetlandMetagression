@@ -107,24 +107,55 @@ init <- list(init = init,
 
 # Linear model (M3c from Moeltner paper)
 ma_linear <- stan("code/linearMA.stan", 
-					 pars = c("beta", "sigma", "gamma"),init = init,
+					 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
 					 data=data_stan_whole, iter=n_iter, chains=n_chains)#, seed = seed)
+
 ma_linear_freshwl <- stan("code/linearMA.stan", 
-				  pars = c("beta", "sigma", "gamma"),init = init,
+				  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
 				  data=data_stan_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
+
 ma_linear_freshwl_can <- stan("code/linearMA.stan", 
-						  pars = c("beta", "sigma", "gamma"),init = init,
+						  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
 						  data=data_stan_freshwl_can, iter=n_iter, chains=n_chains)#, seed = seed)
+
 ma_linear_whole_can <- stan("code/linearMA.stan", 
-							  pars = c("beta", "sigma", "gamma"),init = init,
+							  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
 							  data=data_stan_wholel_can, iter=n_iter, chains=n_chains)#, seed = seed)
 
-#summary of results
+# nonLinear model (M1c from Moeltner paper)
+ma_nonlinear <- stan("code/nonlinearMA.stan", 
+				  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+				  data=data_stan_whole, iter=n_iter, chains=n_chains)#, seed = seed)
+
+ma_nonlinear_freshwl <- stan("code/nonlinearMA.stan", 
+						  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+						  data=data_stan_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
+
+ma_nonlinear_freshwl_can <- stan("code/nonlinearMA.stan", 
+							  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+							  data=data_stan_freshwl_can, iter=n_iter, chains=n_chains)#, seed = seed)
+
+ma_nonlinear_whole_can <- stan("code/nonlinearMA.stan", 
+							pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+							data=data_stan_wholel_can, iter=n_iter, chains=n_chains)#, seed = seed)
+
+#summary of results--Linear
 print(ma_linear, digits_summary = 3)
 print(ma_linear_freshwl, digits_summary = 3)
 print(ma_linear_freshwl_can, digits_summary = 3)
 print(ma_linear_whole_can, digits_summary = 3)
 
+#summary of results--NonLinear
+print(ma_nonlinear, digits_summary = 3)
+print(ma_nonlinear_freshwl, digits_summary = 3)
+print(ma_nonlinear_freshwl_can, digits_summary = 3)
+print(ma_nonlinear_whole_can, digits_summary = 3)
+
+library(loo)
+log_lik_ <- extract_log_lik(ma_linear, merge_chains = FALSE)
+loo(ma_linear)
+
+str(extract(ma_linear))
 #MCMC diagnostics
 stan_trace(ma_linear)
 #Autocorrelation
