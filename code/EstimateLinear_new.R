@@ -258,10 +258,22 @@ stan_ac(ma_linear)
 shinystan::launch_shinystan(ma_linear)
 
 
-library(broom)
-tidyMCMC(data.rstan.add, conf.int = TRUE, conf.method = "HPDinterval",
-		 pars = c("beta0", "beta", "sigma"))
+
 
 save(ma_linear, file="output/ma_linear.RData")
 save(ma_linear_freshwl, file="output/ma_linear_freshwl.RData")
 
+
+
+library("broom.mixed")
+library("broom")
+library("coda")
+load("output/ma_linear_freshwl.RData")
+
+final_results_wholefresh <- tidyMCMC(ma_linear_freshwl, conf.int = TRUE, conf.method = "HPDinterval",
+								   pars = c( "beta", "gamma", "sigma"))
+
+#Bayesian p-values that are somewhat analogous to the frequentist p-values for investigating the hypothesis that a parameter is equal to zero.
+
+mcmcpvalue(as.matrix(ma_linear_freshwl)[, "beta[1]"])
+mean(as.matrix(ma_linear_freshwl)[, "beta[1]"] > 0)
