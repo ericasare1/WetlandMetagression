@@ -258,7 +258,10 @@ stan_ac(ma_linear)
 shinystan::launch_shinystan(ma_linear)
 
 
-plot_data <- extract(ma_linear)
+library(broom)
+tidyMCMC(data.rstan.add, conf.int = TRUE, conf.method = "HPDinterval",
+		 pars = c("beta0", "beta", "sigma"))
 
 save(ma_linear, file="output/ma_linear.RData")
+save(ma_linear_freshwl, file="output/ma_linear_freshwl.RData")
 
