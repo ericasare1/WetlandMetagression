@@ -199,19 +199,6 @@ plot(loo_whole_lin)
 plot(loo_wh_fresh_lin)
 
 #Marginal posterior predictive checks_linear
-whole_lin <- ppc_loo_pit_overlay(
-	y = data_stan_whole$lwtp,
-	yrep = y_rep_wh_lin,
-	lw = weights(loo_whole_lin$psis_object)
-)
-
-whole_fresh_lin <- ppc_loo_pit_overlay(
-	y = data_stan_freshwl$lwtp,
-	yrep = y_rep_wh_fresh_lin,
-	lw = weights(loo_wh_fresh_lin$psis_object)
-)
-
-#linear
 #Dependent Variable in linear model for posterior check
 #y = lwtp - log(q1- q0)
 df1 <- df %>% mutate(y = lnwtp - log(q1-q0))
@@ -231,20 +218,11 @@ whole_fresh_lin <- ppc_loo_pit_overlay(
 	lw = weights(loo_wh_fresh_lin$psis_object)
 )
 
-fresh_canada_lin <- ppc_loo_pit_overlay(
-	y = df_canada_fresh1$y,
-	yrep = y_rep_fresh_can_lin,
-	lw = weights(loo_fresh_can_lin$psis_object)
-)
-
-whole_can_lin <- ppc_loo_pit_overlay(
-	y = df_canada1$y,
-	yrep = y_rep_wh_can_lin,
-	lw = weights(loo_fresh_can_lin$psis_object)
-)
-
-
 #other post estimation diagnostics
+library(bayesplot)
+mcmc_intervals(as.matrix(ma_linear_freshwl), regex_pars = "beta|sigma")
+mcmc_areas(as.matrix(ma_linear_freshwl), regex_pars = "beta|sigma")
+
 MCMCtrace(ma_linear, 
 		  params = c('beta\\[1\\]', 'beta\\[2\\]', 'beta\\[3\\]'),
 		  ISB = FALSE,
@@ -273,104 +251,9 @@ MCMCplot(MCMC_data,
 		 sz_ax = 4,
 		 sz_main_txt = 2)
 
-#MCMC diagnostics
-stan_trace(ma_linear)
 #Autocorrelation
 stan_ac(ma_linear)
-#Raftery Diagnostics
-library(LaplacesDemon)
-raftery.diag(ma_linear)
-#Rhat
-stan_rhat(ma_linear)
-#effective SS
-stan_ess(ma_linear)
 
-#Predictions
-ext_fit <- extract(ma_linear)
-
-# Accuracy
-apply(ext_fit$y_rep, 2, median)
-## [1] 0.75
-
-loo(ma_linear)
-
-beta_post <- ext_fit$beta
-min(beta_post)
-gamma_post <- ext_fit$gamma
-sigma_post <- ext_fit$sigma
-
-x <- data.frame(data_stan$x)
-q <- data.frame(cbind(data_stan$q0, data_stan$q1))
-q <- q %>% mutate(q01 = 0.5*(X1 + X2))
-# Function for simulating y based on new x
-gen_quant_r <- function(x, q01) {
-	beta_x = as.matrix(sample(beta_post, size = length(x)))
-	y_pred = as.matrix(x) %*% beta_x + as.matrix(q$q01) %*% as.matrix(sample(gamma_post, size = length(1))) 
-	+ as.matrix(sample(sigma_post, size = 58))
-	return(y_pred)
-}
-gen_quant_r(x,q$q01)
-
-#pred_gen
-pred <- stan(file = "pred_generated.stan",
-			 data = list(x = x, N = nrow(df_scaled),
-			 			n_col = ncol(x),
-			 			N_samples = length(beta_post),
-			 			gamma = gamma_post,
-			 			beta = beta_post,
-			 			sigma = sigma_post),
-			 chains = 1, iter = 100,
-			 algorithm = "Fixed_param")
-
-# Extract and format output
-ext_pred <- extract(pred)
-out_mat <- matrix(NA, nrow = dim(ext_pred$y_test)[2],
-				  ncol = dim(ext_pred$y_test)[3])
-for(i in 1:dim(ext_pred$y_test)[2]) {
-	for(j in 1:dim(ext_pred$y_test)[3]) {
-		out_mat[i, j] <- mean(ext_pred$y_test[, i, j])
-	}
-}
-
-
-ext_ract = extract(ma_linear)
-#summary of results
-print(ma_linear, digits_summary = 3)
-#MCMC diagnostics
-stan_trace(ma_linear)
-#Autocorrelation
-stan_ac(ma_linear)
-#Raftery Diagnostics
-library(LaplacesDemon)
-raftery.diag(ma_linear)
-#Rhat
-stan_rhat(ma_linear)
-#effective SS
-stan_ess(ma_linear)
-
-y_rep <- as.matrix(ma_linear, pars = "y_rep")
-
-##Model Validation
-library("tidyverse")
-mcmc = as.data.frame(ma_linear) %>% dplyr:::select(starts_with("beta"),
-														 sigma) %>% as.matrix
-
-newdata = df_scaled
-str(newdata)
-Xmat = model.matrix(newdata)
-
-
-
-
-print(ma_linear, digits_summary = 3)
-
-print(get_elapsed_time(ma_linear))
-
-posterior <- as.array(ma_linear)
-colnames(data_stan$x)
-apply(posterior, c(3), function(x){mean(x>0)})
-
-str(rstan::extract(ma_linear))
 
 shinystan::launch_shinystan(ma_linear)
 
@@ -379,56 +262,3 @@ plot_data <- extract(ma_linear)
 
 save(ma_linear, file="output/ma_linear.RData")
 
-
-# Nonlinear model (M1c from Moeltner paper)
-ma_nonlinear <- stan("code/nonlinearMA.stan", 
-					pars = c("beta", "sigma", "gamma"),init = init,
-					data=data_stan, iter=n_iter, chains=n_chains)#, seed = seed)
-
- print(ma_nonlinear, digits_summary = 3)
-
-print(get_elapsed_time(ma_nonlinear))
-
-posterior <- as.array(ma_nonlinear)
-
-apply(posterior, c(3), function(x){mean(x>0)})
-
-bh_mcmc <- ma_nonlinear %>% 
-	rstan::extract()
-
-
-
-pp_rhat <- bh_mcmc[ 'y_new'] %>% 
-	map_df(as_data_frame, .id = 'variable') %>% 
-	gather(observation,value, -variable) %>% View()
-
-ggplot() + 
-	geom_density(data = pp_rhat, aes(log(value),fill = 'Posterior Predictive'), alpha = 0.5) + 
-	geom_density(data = df$lwtp, aes(log(r), fill = 'Observed'), alpha = 0.5)
-
-
-
-
-extract(ma_nonlinear)$y_new 
-
-
-
-y_pred <- extract(ma_nonlinear, 'y_new')
-
-y_pred <- unlist(y_new, use.names=FALSE)
-
-save(ma_linear, file="output/ma_nonlinear.RData")
-
-
-
-
-
-color_scheme_set("red")
-mcmc_intervals(posterior, pars = c("beta[1]", "sigma", "gamma2"))
-
-color_scheme_set("blue")
-mcmc_trace(posterior)#, pars = c("wt", "sigma"))
-
-mcmc_pairs(posterior, off_diag_args = list(size = 1.5))
-
-mcmc_dens_overlay(posterior, pars = c("beta[1]", "sigma", "gamma2"))
