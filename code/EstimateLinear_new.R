@@ -273,7 +273,30 @@ load("output/ma_linear_freshwl.RData")
 final_results_wholefresh <- tidyMCMC(ma_linear_freshwl, conf.int = TRUE, conf.method = "HPDinterval",
 								   pars = c( "beta", "gamma", "sigma"))
 
-#Bayesian p-values that are somewhat analogous to the frequentist p-values for investigating the hypothesis that a parameter is equal to zero.
+#Bayesian p-values that are somewhat analogous to the frequentist p-values for investigating the hypothesis that a parameter is equal to zero.: share of posterior density to the right of zero
 
-mcmcpvalue(as.matrix(ma_linear_freshwl)[, "beta[1]"])
 mean(as.matrix(ma_linear_freshwl)[, "beta[1]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[2]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[3]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[4]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[5]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[6]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[7]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[8]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[9]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[10]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[11]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[12]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[13]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[14]"] > 0)
+
+
+	
+for (i in 1:14){
+		print(mean(as.matrix(ma_linear_freshwl)[, "beta[1]"]) )
+			  #> 0))
+	#	print(i)
+		i <- i + 1
+}
+		
+	
