@@ -13,7 +13,6 @@ p_load(tidyverse, rstan, shinystan, bayesplot, bridgesampling)
 
 df <- read_csv("data/metadata2.csv")
 df %>% View()
-
 summary(df)
 
 # Set seed
@@ -53,48 +52,23 @@ df %>%
 			  wtp = mean(exp(lnwtp)),
 			  acre = mean(q1-q0)*1000,
 			  wtp_acre = wtp/acre)
+
+#Graph of lnwtp vrs lnacres for full data
 df %>%
 	mutate(lnacres = log((q1-q0)*1000)) %>%
 	ggplot(aes(x=lnacres, y = lnwtp, label=canada))+
 	geom_point() +
 	geom_text(aes(label=canada),hjust=0, vjust=0)
-
 summary(df)
 
-#Creating different datafranes
-df_whole <- df
-df_freshwl <- df %>% filter(wlfresh ==1)
-df_canada_fresh <- df_freshwl %>% filter(canada ==1)
-df_us_fresh <- df_freshwl %>% filter(canada ==0)
-df_canada <- df %>% filter(canada ==1)
-df_us <- df %>% filter(canada ==0)
-
-
-#Linear Regression (Frequentist) estimations
-lm1 <- lm(lnwtp2 ~ q01 + lnyear + lninc + us + 
-		  	local + 
-		  	prov + reg + cult + 
-		  	forest + 
-		  	volunt + lumpsum, data  = df)
-summary(lm1)
-
-lm1 <- lm(lnwtp ~ q01 + lnyear + lninc + #sagulf + nmw + 
-		  	local + prov + reg + cult + forest + 
-		  	volunt + lumpsum + 
-		  	canada, data  = df)
-summary(lm1)
-
-lm1 <- lm(lnwtp ~ q_percent + lnyear + lninc + #sagulf + nmw + 
-		  	local + prov + reg + cult + forest + canada, data  = df)
-summary(lm1)
-
-lm1 <- lm(lnwtp ~ q_change + lnyear + lninc + #sagulf + nmw + 
-		  	local + prov + reg + cult + 
-		  	volunt + lumpsum + 
-		  	forest + canada, data  = df)
-summary(lm1)
-
-
+#Graph of lnwtp vrs lnacres for freshwater data
+df %>%
+	mutate(lnacres = log((q1-q0)*1000)) %>%
+	filter(wlfresh == 1) %>%
+	ggplot(aes(x=lnacres, y = lnwtp, label=canada))+
+	geom_point() +
+	geom_text(aes(label=canada),hjust=0, vjust=0)
+summary(df)
 #Bayesia models
 source("code/rstan_data.R")
 
@@ -108,9 +82,19 @@ init <- list(init = init,
 			 init = init)
 
 # Linear model (M3c from Moeltner paper)
-ma_linear <- stan("code/linearMA.stan", 
+ma_linear <- stan("code/linearMA_bridgesampling.stan", 
 					 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
 					 data=data_stan_whole, iter=n_iter, chains=n_chains)#, seed = seed)
+
+library(bridgesampling)
+# compute (log) marginal likelihoods ###
+set.seed(1)
+bridge_lin <- bridge_sampler(ma_linear)
+### compute approximate percentage errors ###
+error_measures(bridge_lin)$percentage
+### compute Bayes factor ("true" value: BF01 = 1.273) ###
+bf(bridge_lin, bridge_lin)
+summary(bridge_lin)
 
 ma_linear_freshwl <- stan("code/linearMA.stan", 
 				  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
