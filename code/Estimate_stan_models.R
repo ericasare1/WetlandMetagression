@@ -85,28 +85,70 @@ init <- list(init = init,
 ma_linear <- stan("code/linearMA_bridgesampling.stan", 
 					 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
 					 data=data_stan_whole, iter=n_iter, chains=n_chains)#, seed = seed)
+ma_linear_freshwl <- stan("code/linearMA_bridgesampling.stan", 
+						  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+						  data=data_stan_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
+ma_linear_freshwl_can <- stan("code/linearMA_bridgesampling.stan", 
+							  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+							  data=data_stan_freshwl_can, iter=n_iter, chains=n_chains)#, seed = seed)
 
+save(ma_linear, file="output/ma_linear.RData")
+save(ma_linear_freshwl, file="output/ma_linear_freshwl.RData")
+save(ma_linear_freshwl_can, file="output/ma_linear_freshwl_can.RData")
+
+#nonlinear
+ma_nonlinear <- stan("code/nonlinearMA_bridgesampling.stan", 
+				  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+				  data=data_stan_whole, iter=n_iter, chains=n_chains)#, seed = seed)
+ma_nonlinear_freshwl <- stan("code/nonlinearMA_bridgesampling.stan", 
+						  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+						  data=data_stan_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
+ma_nonlinear_freshwl_can <- stan("code/nonlinearMA_bridgesampling.stan", 
+							  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+							  data=data_stan_freshwl_can, iter=n_iter, chains=n_chains)#, seed = seed)
+
+save(ma_nonlinear, file="output/ma_nonlinear.RData")
+save(ma_nonlinear_freshwl, file="output/ma_nonlinear_freshwl.RData")
+save(ma_nonlinear_freshwl_can, file="output/ma_nonlinear_freshwl_can.RData")
+
+#Posterior Diagnostics
+source("output/ma_linear.RData")
+source("output/ma_linear_freshwl")
+source("output/ma_linear_freshwl_can")
+source("output/ma_nonlinear.RData")
+source("output/ma_nonlinear_freshwl")
+source("output/ma_nonlinear_freshwl_can")
+
+#1....
 library(bridgesampling)
 # compute (log) marginal likelihoods ###
 set.seed(1)
-bridge_lin <- bridge_sampler(ma_linear)
+bridge_lin_whole <- bridge_sampler(ma_linear)
+bridge_lin_freshwl <- bridge_sampler(ma_linear_freshwl)
+bridge_lin_freshwl_can <- bridge_sampler(ma_linear_freshwl_can)
+bridge_nonlin_whole <- bridge_sampler(ma_nonlinear)
+bridge_nonlin_freshwl <- bridge_sampler(ma_nonlinear_freshwl)
+bridge_nonlin_freshwl_can <- bridge_sampler(ma_nonlinear_freshwl_can)
+### compute Bayes factor ("true" value: BF01 = 1.273) ###
+bf(bridge_lin_whole, bridge_nonlin_whole)
+bf(bridge_lin_freshwl, bridge_nonlin_freshwl)
+bf(bridge_lin_freshwl, bridge_lin_whole)
+#..Relative Mean Square Errors
+summary(bridge_lin_whole)
+summary(bridge_nonlin_whole)
+summary(bridge_lin_freshwl)
+
+
 ### compute approximate percentage errors ###
 error_measures(bridge_lin)$percentage
 ### compute Bayes factor ("true" value: BF01 = 1.273) ###
 bf(bridge_lin, bridge_lin)
 summary(bridge_lin)
 
-ma_linear_freshwl <- stan("code/linearMA.stan", 
-				  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
-				  data=data_stan_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
-
-ma_linear_freshwl_can <- stan("code/linearMA.stan", 
-						  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
-						  data=data_stan_freshwl_can, iter=n_iter, chains=n_chains)#, seed = seed)
-
-ma_linear_whole_can <- stan("code/linearMA.stan", 
-							  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
-							  data=data_stan_wholel_can, iter=n_iter, chains=n_chains)#, seed = seed)
+print(ma_linear_freshwl_can)
+save(ma_linear, file="output/ma_linear.RData")
+save(ma_linear_freshwl, file="output/ma_linear_freshwl.RData")
+save(ma_linear_whole_can, file="output/ma_linear_whole_can.RData")
 
 # nonLinear model (M1c from Moeltner paper)
 ma_nonlinear <- stan("code/nonlinearMA.stan", 
@@ -121,9 +163,9 @@ ma_nonlinear_freshwl_can <- stan("code/nonlinearMA.stan",
 							  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
 							  data=data_stan_freshwl_can, iter=n_iter, chains=n_chains)#, seed = seed)
 
-ma_nonlinear_whole_can <- stan("code/nonlinearMA.stan", 
-							pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
-							data=data_stan_wholel_can, iter=n_iter, chains=n_chains)#, seed = seed)
+save(ma_nonlinear, file="output/ma_nonlinear.RData")
+save(ma_nonlinear_freshwl, file="output/ma_nonlinear_freshwl.RData")
+save(ma_nonlinear_whole_can, file="output/ma_nonlinear_whole_can.RData")
 
 #summary of results--Linear
 #library(devtools)
