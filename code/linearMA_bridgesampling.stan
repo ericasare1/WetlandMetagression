@@ -31,13 +31,13 @@ transformed parameters {
   v = x * beta + gamma * q01;
 }
  
-model {
+model { 
   // Prior
-  beta ~ normal(0,10);
-  gamma ~ normal(0,10);
-  sigma ~ inv_gamma(0.5, 0.5);
+  target += normal_lpdf(beta | 0, 10);
+  target += normal_lpdf(gamma | 0, 10);
+  target += inv_gamma_lpdf(sigma | 0.5, 0.5);
   //likelihood contribution
-  y ~ normal(v, sigma);
+  target += normal_lpdf(y | v, sigma);
 }
 
 generated quantities {
