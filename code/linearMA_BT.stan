@@ -15,9 +15,8 @@ data {
 transformed data{
   vector[N] y;
   vector[N] q01;
-  
+
   y = lwtp - log(q1- q0);
-  
   q01 = (q0 + q1) / 2;
   
 }
@@ -46,7 +45,7 @@ model {
 generated quantities {
   real y_rep[Nnew];
   for (n in 1:Nnew) { 
-        y_rep[n] = normal_rng(x[n] * beta + gamma * q01[n], sigma);
+        y_rep[n] = normal_rng(x[n] * beta + gamma * q01[n] + log(q1[n]- q0[n]), sigma);
   }
   
 }

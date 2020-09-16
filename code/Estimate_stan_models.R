@@ -280,6 +280,8 @@ for (i in 1:14){
 		i <- i + 1
 }
 
+###Predictions..Benefit Transfer
+
 #extracting predicted dependent values for the models for linear models
 fit_wh_fresh_lin <- extract(ma_linear_freshwl)
 y_rep_wh_fresh_lin <- fit_wh_fresh_lin$y_rep
