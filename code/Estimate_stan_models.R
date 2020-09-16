@@ -282,6 +282,12 @@ for (i in 1:14){
 
 ###Predictions..Benefit Transfer
 
+ma_linear_freshwl_pred <- stan("code/linearMA_bridgesampling.stan", 
+						  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+						  data=data_stan_freshwl_pred, iter=n_iter, chains=n_chains)#, seed = seed)
+ma_linear_freshwl_can_pred <- stan("code/linearMA_bridgesampling.stan", 
+							  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+							  data=data_stan_freshwl_can_pred, iter=n_iter, chains=n_chains)#, seed = seed)
 #extracting predicted dependent values for the models for linear models
 fit_wh_fresh_lin <- extract(ma_linear_freshwl)
 y_rep_wh_fresh_lin <- fit_wh_fresh_lin$y_rep

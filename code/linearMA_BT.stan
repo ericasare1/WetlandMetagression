@@ -2,12 +2,11 @@
 data {
   int<lower=0> Nnew; // number of observations
   int<lower=0> N; // number of observations
-  int<lower=0> Knew; // number of predictors
   int<lower=0> K; // number of predictors
   int<lower=0> S; // number of studies
   vector[N] lwtp; // logged wtp: response variable
   matrix[N, K] x; // matrix of predictors
-  matrix[Nnew, Knew] xnew; // matrix of predictors
+  matrix[Nnew, K] xnew; // matrix of predictors
   vector[N] q0; // SQ levels
   vector[N] q1; // Policy levels
 }
@@ -32,7 +31,7 @@ transformed parameters {
 
   v = x * beta + gamma * q01;
 }
- 
+  
 model {
   // Prior
   beta ~ normal(0,10);
