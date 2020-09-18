@@ -158,6 +158,33 @@ model_com_lin_nonlin <- loo_compare(loo_whole_lin,loo_whole_nonlin) #linear mode
 plot(loo_whole_lin)
 plot(loo_wh_fresh_lin)
 
+#extracting predicted dependent values for the models for linear models
+fit_wh_fresh_lin <- extract(ma_linear_freshwl)
+y_rep_wh_fresh_lin <- fit_wh_fresh_lin$y_rep
+
+fit_fresh_can_lin <- extract(ma_linear_freshwl_can)
+y_rep_fresh_can_lin <- fit_fresh_can_lin$y_rep
+
+#Marginal posterior predictive checks_linear
+whole_lin <- ppc_loo_pit_overlay(
+	y = df1$y, #change the dep variable
+	yrep = y_rep_wh_lin,
+	lw = weights(loo_whole_lin$psis_object)
+)
+
+whole_fresh_lin <- ppc_loo_pit_overlay(
+	y = df_freshwl$lnwtp,
+	yrep = y_rep_wh_fresh_lin,
+	lw = weights(loo_wh_fresh_lin$psis_object)
+)
+
+loo_wh_fresh_lin_can <- loo(ma_linear_freshwl_can, save_psis = TRUE)
+
+whole_fresh_lin_can <- ppc_loo_pit_overlay(
+	y = df_canada_fresh$lnwtp,
+	yrep = y_rep_fresh_can_lin,
+	lw = weights(loo_wh_fresh_lin_can$psis_object)
+)
 
 #summary of results--Linear
 #library(devtools)
@@ -297,36 +324,24 @@ for (i in 1:14){
 ###Predictions..Benefit Transfer
 print(ma_linear_freshwl)
 ma_linear_freshwl_pred <- stan("code/linearMA_BT.stan", 
-						  pars = "y_rep", init = init,
-						  data=data_stan_freshwl_pred, iter=n_iter, chains=n_chains)#, seed = seed)
+							   pars = "y_rep", init = init,
+							   data=data_stan_freshwl_pred, iter=n_iter, chains=n_chains)#, seed = seed)
 ma_linear_freshwl_can_pred <- stan("code/linearMA_BT.stan", 
-							  pars =  "y_rep", init = init,
-							  data=data_stan_freshwl_can_pred, iter=n_iter, chains=n_chains)#, seed = seed)
-#extracting predicted dependent values for the models for linear models
-fit_wh_fresh_lin <- extract(ma_linear_freshwl)
-y_rep_wh_fresh_lin <- fit_wh_fresh_lin$y_rep
+								   pars =  "y_rep", init = init,
+								   data=data_stan_freshwl_can_pred, iter=n_iter, chains=n_chains)#, seed = seed)
 
-fit_fresh_can_lin <- extract(ma_linear_freshwl_can)
-y_rep_fresh_can_lin <- fit_fresh_can_lin$y_rep
 
-#Marginal posterior predictive checks_linear
-#Dependent Variable in linear model for posterior check
-#y = lwtp - log(q1- q0)
-df1 <- df %>% mutate(y = lnwtp - log(q1-q0))
-df_freshwl1 <- df1 %>% filter(wlfresh ==1)
-df_canada_fresh1 <- df_freshwl1 %>% filter(canada ==1)
-df_canada1 <- df1 %>% filter(canada ==1)
-
-whole_lin <- ppc_loo_pit_overlay(
-	y = df1$y, #change the dep variable
-	yrep = y_rep_wh_lin,
-	lw = weights(loo_whole_lin$psis_object)
-)
-
-whole_fresh_lin <- ppc_loo_pit_overlay(
-	y = df_freshwl1$y,
-	yrep = y_rep_wh_fresh_lin,
-	lw = weights(loo_wh_fresh_lin$psis_object)
-)
-
-	
+coef_plot_fresh_can_pred <- MCMCplot(ma_linear_freshwl_pred , ma_linear_freshwl_can_pred, 
+							params = 'y_rep', 
+							rank = TRUE,
+							labels = c("Case 1",
+									   "Case2"), 
+							main = 'MCMCvis plot',
+							xlab = 'ESTIMATE',
+							guide_lines = TRUE,
+							sz_labels = 1.5,
+							sz_med = 2,
+							sz_thick = 7,
+							sz_thin = 3,
+							sz_ax = 4,
+							sz_main_txt = 2)

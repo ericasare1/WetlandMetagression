@@ -12,10 +12,8 @@ data {
 transformed data{
   vector[N] y;
   vector[N] q01;
-  vector[N] lndiff_q1q2;
- 
-  y = lwtp;
-  lndiff_q1q2 = log(q1- q0);
+  
+  y = lwtp - log(q1- q0);
   q01 = (q0 + q1) / 2;
   
 }
@@ -45,12 +43,12 @@ model {
 
 generated quantities {
   real y_rep[N];
-  vector[N] log_lik; 
+  vector[N] log_lik;
   
   for (n in 1:N) { 
-        y_rep[n] = normal_rng(x[n] * beta + gamma * q01[n], sigma);
+        y_rep[n] = normal_rng(x[n] * beta + gamma * q01[n] + log(q1[n]- q0[n]), sigma);
         
-        log_lik[n] = normal_lpdf(y[n] | x[n] * beta + gamma * q01[n] + lndiff_q1q2, sigma);
+        log_lik[n] = normal_lpdf(y[n] | x[n] * beta + gamma * q01[n], sigma);
   }
   
 }
