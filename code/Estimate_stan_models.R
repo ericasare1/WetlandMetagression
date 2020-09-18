@@ -70,7 +70,7 @@ df %>%
 	geom_text(aes(label=canada),hjust=0, vjust=0)
 summary(df)
 #Bayesia models
-source("code/rstan_data.R")
+#source("code/rstan_data.R")
 
 init <- list(gamma = 0.08,
 		#	 beta = c(-.5, 0, .2, -0.4, -0.7, 3.1, -2.2, 1.6, -.3, 1.1, -0.02, 1.5),
@@ -112,13 +112,6 @@ save(ma_nonlinear_freshwl, file="output/ma_nonlinear_freshwl.RData")
 save(ma_nonlinear_freshwl_can, file="output/ma_nonlinear_freshwl_can.RData")
 
 #Posterior Diagnostics
-source("output/ma_linear.RData")
-source("output/ma_linear_freshwl")
-source("output/ma_linear_freshwl_can")
-source("output/ma_nonlinear.RData")
-source("output/ma_nonlinear_freshwl")
-source("output/ma_nonlinear_freshwl_can")
-
 #Model comparison: Bayes factor
 library(bridgesampling)
 # compute (log) marginal likelihoods ###
@@ -129,17 +122,15 @@ bridge_lin_freshwl_can <- bridge_sampler(ma_linear_freshwl_can)
 bridge_nonlin_whole <- bridge_sampler(ma_nonlinear)
 bridge_nonlin_freshwl <- bridge_sampler(ma_nonlinear_freshwl)
 bridge_nonlin_freshwl_can <- bridge_sampler(ma_nonlinear_freshwl_can)
-### compute Bayes factor ("true" value: BF01 = 1.273) ###
-bf(bridge_lin_whole, bridge_nonlin_whole)
-bf(bridge_lin_whole, bridge_lin_freshwl)
+### compute Bayes factor ###
+bf(bridge_lin_whole, bridge_nonlin_whole) #BF :1.12
+bf(bridge_lin_whole, bridge_lin_freshwl) #BF : 0.00
 #..Relative Mean Square Errors
+summary(bridge_lin_freshwl)
+summary(bridge_lin_freshwl_can)
 summary(bridge_lin_whole)
 summary(bridge_nonlin_whole)
-summary(bridge_lin_freshwl)
-### compute approximate percentage errors ###
-error_measures(bridge_lin_whole)$percentage
-error_measures(bridge_nonlin_whole)$percentage
-error_measures(bridge_lin_freshwl)$percentage
+summary(bridge_nonlin_freshwl)
 
 #model comparison: Loo
 library(loo)
@@ -148,15 +139,19 @@ library(loo)
 
 loo_whole_lin <- loo(ma_linear, save_psis = TRUE)
 loo_wh_fresh_lin <- loo(ma_linear_freshwl, save_psis = TRUE)
-
+loo_wh_fresh_lin_can <- loo(ma_linear_freshwl_can, save_psis = TRUE)
 loo_whole_nonlin <- loo(ma_nonlinear, save_psis = TRUE)
 loo_wh_fresh_nonlin <- loo(ma_nonlinear_freshwl, save_psis = TRUE)
+loo_wh_fresh_nonlin_can <- loo(ma_nonlinear_freshwl_can, save_psis = TRUE)
 
 #Comparing the models on expected log predictive density
-model_com_lin_nonlin <- loo_compare(loo_whole_lin,loo_whole_nonlin) #linear model preferred based on low predictive error based on Loo CV
+model_com_lin_nonlin <- loo_compare(loo_whole_lin, loo_whole_nonlin) #linear model preferred based on low predictive error based on Loo CV
+print(model_com_lin_nonlin, simplify = FALSE)
 #Plotting Pareto k diagnostics for linear model
 plot(loo_whole_lin)
 plot(loo_wh_fresh_lin)
+plot(loo_whole_nonlin)
+plot(loo_wh_fresh_lin_can) 
 
 #extracting predicted dependent values for the models for linear models
 fit_wh_fresh_lin <- extract(ma_linear_freshwl)
@@ -166,11 +161,6 @@ fit_fresh_can_lin <- extract(ma_linear_freshwl_can)
 y_rep_fresh_can_lin <- fit_fresh_can_lin$y_rep
 
 #Marginal posterior predictive checks_linear
-whole_lin <- ppc_loo_pit_overlay(
-	y = df1$y, #change the dep variable
-	yrep = y_rep_wh_lin,
-	lw = weights(loo_whole_lin$psis_object)
-)
 
 whole_fresh_lin <- ppc_loo_pit_overlay(
 	y = df_freshwl$lnwtp,
@@ -194,6 +184,8 @@ whole_fresh_lin_can <- ppc_loo_pit_overlay(
 #library("tidy_stan")
 library("MCMCvis")
 library("broom")
+
+
 results_wholelin <- MCMCsummary(ma_linear, params = c("beta","gamma","sigma"), round = 2)
 results_freshwholelin <- MCMCsummary(ma_linear_freshwl, params = c("beta","gamma","sigma"),round = 2)
 results_ma_linear_freshwl_can <- MCMCsummary(ma_linear_freshwl_can, params = c("beta","gamma","sigma"), round = 2)
@@ -205,11 +197,11 @@ write.csv(results_ma_linear_freshwl_can, "output/results_ma_linear_freshwl_can.c
 #summary of results--NonLinear
 results_whole_onlin <- MCMCsummary(ma_nonlinear, params = c("beta","gamma","sigma"), round = 2)
 results_freshwhole_nonlin <- MCMCsummary(ma_nonlinear_freshwl, params = c("beta","gamma","sigma"),round = 2)
-results_ma_linear_freshwl_can <- MCMCsummary(ma_nonlinear_freshwl_can, params = c("beta","gamma","sigma"), round = 2)
+results_ma_nonlinear_freshwl_can <- MCMCsummary(ma_nonlinear_freshwl_can, params = c("beta","gamma","sigma"), round = 2)
 
 write.csv(results_whole_onlin, "output/results_whole_nonlin.csv")
 write.csv(results_freshwhole_nonlin, "output/results_freshwhole_nonlin.csv")
-write.csv(results_ma_linear_freshwl_can, "output/results_ma_linear_freshwl_can.csv")
+write.csv(results_ma_nonlinear_freshwl_can, "output/results_ma_nonlinear_freshwl_can.csv")
 
 #other post estimation diagnostics
 library(bayesplot)
@@ -278,7 +270,7 @@ stan_ac(ma_linear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 									'beta[13]', 'beta[14]'))
 
 
-shinystan::launch_shinystan(ma_linear)
+shinystan::launch_shinystan(ma_linear_freshwl)
 
 #Bayesian p-values that are somewhat analogous to the frequentist p-values for investigating the hypothesis that a parameter is equal to zero.: share of posterior density to the right of zero
 
