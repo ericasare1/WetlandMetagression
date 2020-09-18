@@ -284,3 +284,4 @@ stan_rhat(ma_nonlinear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[
 stan_rhat(ma_nonlinear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 											 'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 											 'beta[9]', 'beta[10]', 'beta[11]'))
+ 
