@@ -70,7 +70,7 @@ df %>%
 	geom_text(aes(label=canada),hjust=0, vjust=0)
 summary(df)
 #Bayesia models
-#source("code/rstan_data.R")
+source("code/rstan_data.R")
 
 init <- list(gamma = 0.08,
 			 #	 beta = c(-.5, 0, .2, -0.4, -0.7, 3.1, -2.2, 1.6, -.3, 1.1, -0.02, 1.5),
@@ -122,6 +122,14 @@ bridge_lin_freshwl_can <- bridge_sampler(ma_linear_freshwl_can)
 bridge_nonlin_whole <- bridge_sampler(ma_nonlinear)
 bridge_nonlin_freshwl <- bridge_sampler(ma_nonlinear_freshwl)
 bridge_nonlin_freshwl_can <- bridge_sampler(ma_nonlinear_freshwl_can)
+#compute log marginal likelihood
+print(bridge_lin_whole)
+print(bridge_lin_freshwl)
+print(bridge_lin_freshwl_can)
+print(bridge_nonlin_whole)
+print(bridge_nonlin_freshwl)
+print(bridge_nonlin_freshwl_can)
+
 ### compute Bayes factor ###
 bf(bridge_lin_whole, bridge_nonlin_whole) #BF :1.12
 bf(bridge_lin_whole, bridge_lin_freshwl) #BF : 0.00
@@ -131,6 +139,8 @@ summary(bridge_lin_freshwl_can)
 summary(bridge_lin_whole)
 summary(bridge_nonlin_whole)
 summary(bridge_nonlin_freshwl)
+summary(bridge_nonlin_freshwl_can)
+
 
 #model comparison: Loo
 library(loo)
