@@ -44,24 +44,11 @@ data_stan_freshwl_can <- list(N=nrow(df_canada_fresh),
 
 data_stan_freshwl_can$K <- ncol(data_stan_freshwl_can$x)
 
-#only whole and Canada
-n_ind_whole_can <- n_distinct(df_canada$studyid)
-data_stan_wholel_can <- list(N=nrow(df_canada),
-							 S = n_ind_whole_can,
-							 lwtp=df_canada$lnwtp,
-							 #				  x=as.matrix(df[,6]),
-							 x=cbind(rep(1,nrow(df_canada)),as.matrix(df_canada[, 4:6]),
-							 		as.matrix(df_canada[, 10:14]),
-							 		as.matrix(df_canada[, 17:21])), 
-							 q0 = df_canada$q0,
-							 q1 = df_canada$q1)
-
-data_stan_wholel_can$K <- ncol(data_stan_wholel_can$x)
-
-###..................Prediction data.................................
+###..................Nonleanr Model Prediction data.................................
 #only freshwetlands
+x_sask <- read_csv("data/phjv_sask.csv")
 n_ind_freshwl <- n_distinct(df_freshwl$studyid)
-data_stan_freshwl_pred <- list(N=nrow(df_freshwl),
+data_stan_freshwl_sask <- list(N=nrow(df_freshwl),
 						  S = n_ind_freshwl,
 						  lwtp=df_freshwl$lnwtp,
 						  #				  x=as.matrix(df[,6]),
@@ -71,12 +58,12 @@ data_stan_freshwl_pred <- list(N=nrow(df_freshwl),
 						  q0 = df_freshwl$q0,
 						  q1 = df_freshwl$q1)
 
-data_stan_freshwl_pred$K <- ncol(data_stan_freshwl_pred$x)
-data_stan_freshwl_pred$xnew <- data_stan_freshwl_pred$x[1:2,]
-data_stan_freshwl_pred$Nnew <- nrow(data_stan_freshwl_pred$xnew)
+data_stan_freshwl_sask$K <- ncol(data_stan_freshwl_sask$x)
+data_stan_freshwl_sask$xnew <- x_sask
+data_stan_freshwl_sask$Nnew <- nrow(x_sask)
 #only freshwetlands and Canada
 n_ind_freshwl_can <- n_distinct(df_canada_fresh$studyid)
-data_stan_freshwl_can_pred <- list(N=nrow(df_canada_fresh),
+data_stan_freshwl_can_sask <- list(N=nrow(df_canada_fresh),
 							  S = n_ind_freshwl_can,
 							  lwtp=df_canada_fresh$lnwtp,
 							  #				  x=as.matrix(df[,6]),
@@ -86,7 +73,7 @@ data_stan_freshwl_can_pred <- list(N=nrow(df_canada_fresh),
 							  q0 = df_canada_fresh$q0,
 							  q1 = df_canada_fresh$q1)
 
-data_stan_freshwl_can_pred$K <- ncol(data_stan_freshwl_can_pred$x)
-data_stan_freshwl_can_pred$xnew <- data_stan_freshwl_can_pred$x[1:2,]
-data_stan_freshwl_can_pred$Nnew <- nrow(data_stan_freshwl_can_pred$xnew)
+data_stan_freshwl_can_sask$K <- ncol(data_stan_freshwl_can_sask$x)
+data_stan_freshwl_sask$xnew <- x_sask
+data_stan_freshwl_sask$Nnew <- nrow(x_sask)
 
