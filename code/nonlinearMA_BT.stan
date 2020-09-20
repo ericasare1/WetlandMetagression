@@ -34,7 +34,7 @@ model {
 generated quantities { 
   real y_rep[Nnew];
 
-  for (n in 1:New) { 
+  for (n in 1:Nnew) { 
         y_rep[n] = normal_rng(x[n] * beta + log((exp(gamma * q1[n]) - exp(gamma * q0[n])) / gamma), sigma);
   }
 }
