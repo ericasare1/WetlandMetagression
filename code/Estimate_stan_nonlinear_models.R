@@ -83,7 +83,7 @@ init <- list(init = init,
 
 # Linear model (M3c from Moeltner paper)
 ma_linear <- stan("code/linearMA_bridgesampling.stan", 
-				  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+				  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"), init = init,
 				  data=data_stan_whole, iter=n_iter, chains=n_chains)#, seed = seed)
 ma_linear_freshwl <- stan("code/linearMA_bridgesampling.stan", 
 						  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
@@ -164,26 +164,25 @@ plot(loo_whole_nonlin)
 plot(loo_wh_fresh_lin_can) 
 
 #extracting predicted dependent values for the models for nonlinear models
-fit_wh_fresh_nonlin <- extract(ma_nonlinear_freshwl)
-y_rep_wh_fresh_nonlin <- fit_wh_fresh_nonlin$y_rep
+fit_wh_fresh_lin <- extract(ma_linear_freshwl)
+y_rep_wh_fresh_lin <- fit_wh_fresh_lin$y_rep
 
-fit_fresh_can_nonlin <- extract(ma_nonlinear_freshwl_can)
-y_rep_fresh_can_nonlin <- fit_fresh_can_nonlin$y_rep
+fit_fresh_can_lin <- extract(ma_linear_freshwl_can)
+y_rep_fresh_can_lin <- fit_fresh_can_lin$y_rep
 
 #Marginal posterior predictive checks_linear
-
-whole_fresh_nonlin <- ppc_loo_pit_overlay(
+whole_fresh_lin <- ppc_loo_pit_overlay(
 	y = df_freshwl$lnwtp,
-	yrep = y_rep_wh_fresh_nonlin,
-	lw = weights(loo_wh_fresh_nonlin$psis_object)
+	yrep = y_rep_wh_fresh_lin,
+	lw = weights(loo_wh_fresh_lin$psis_object)
 )
 
-loo_wh_fresh_nonlin_can <- loo(ma_nonlinear_freshwl_can, save_psis = TRUE)
+#loo_wh_fresh_nonlin_can <- loo(ma_nonlinear_freshwl_can, save_psis = TRUE)
 
-whole_fresh_nonlin_can <- ppc_loo_pit_overlay(
+whole_fresh_lin_can <- ppc_loo_pit_overlay(
 	y = df_canada_fresh$lnwtp,
-	yrep = y_rep_fresh_can_nonlin,
-	lw = weights(loo_wh_fresh_nonlin_can$psis_object)
+	yrep = y_rep_fresh_can_lin,
+	lw = weights(loo_wh_fresh_lin_can$psis_object)
 )
 
 #summary of results--Linear
@@ -211,35 +210,35 @@ write.csv(results_freshwhole_nonlin, "output/results_freshwhole_nonlin.csv")
 write.csv(results_ma_nonlinear_freshwl_can, "output/results_ma_nonlinear_freshwl_can.csv")
 
 #...Probability parameter > 0
-load("output/ma_nonlinear_freshwl.RData")
-load("output/ma_nonlinear_freshwl_can.RData")
+load("output/ma_linear_freshwl.RData")
+load("output/ma_linear_freshwl_can.RData")
 
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[1]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[2]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[3]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[4]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[5]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[6]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[7]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[8]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[9]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[10]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[11]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl)[, "beta[12]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[1]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[2]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[3]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[4]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[5]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[6]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[7]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[8]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[9]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[10]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[11]"] > 0)
+mean(as.matrix(ma_linear_freshwl)[, "beta[12]"] > 0)
 
 
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[1]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[2]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[3]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[4]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[5]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[6]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[7]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[8]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[9]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[10]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[11]"] > 0)
-mean(as.matrix(ma_nonlinear_freshwl_can)[, "beta[12]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[1]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[2]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[3]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[4]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[5]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[6]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[7]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[8]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[9]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[10]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[11]"] > 0)
+mean(as.matrix(ma_linear_freshwl_can)[, "beta[12]"] > 0)
 
 install.packages("BayesPostEst")
 library("BayesPostEst")
@@ -258,40 +257,93 @@ library(bayesplot)
 
 #diagnostic Plots
 #Autocorrelation
-stan_ac(ma_nonlinear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_ac(ma_linear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 										   'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 										   'beta[9]', 'beta[10]', 'beta[11]'))
-stan_ac(ma_nonlinear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_ac(ma_linear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 									   'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 									   'beta[9]', 'beta[10]', 'beta[11]', 'beta[12]'))
-stan_trace(ma_nonlinear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_trace(ma_linear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 										  'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 										  'beta[9]', 'beta[10]', 'beta[11]', 'beta[12]'))
-stan_trace(ma_nonlinear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_trace(ma_linear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 											  'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 											  'beta[9]', 'beta[10]', 'beta[11]'))
-stan_plot(ma_nonlinear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_plot(ma_linear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 											 'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 											 'beta[9]', 'beta[10]', 'beta[11]'))
-stan_plot(ma_nonlinear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_plot(ma_linear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 										 'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 										 'beta[9]', 'beta[10]', 'beta[11]', 'beta[12]'))
-stan_dens(ma_nonlinear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_dens(ma_linear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 										 'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 										 'beta[9]', 'beta[10]', 'beta[11]', 'beta[12]'))
-stan_dens(ma_nonlinear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_dens(ma_linear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 											 'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 											 'beta[9]', 'beta[10]', 'beta[11]'))
-stan_ess(ma_nonlinear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_ess(ma_linear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 											'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 											'beta[9]', 'beta[10]', 'beta[11]'))
-stan_ess(ma_nonlinear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_ess(ma_linear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 										'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 										'beta[9]', 'beta[10]', 'beta[11]', 'beta[12]'))
-stan_rhat(ma_nonlinear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_rhat(ma_linear_freshwl, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 										 'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 										 'beta[9]', 'beta[10]', 'beta[11]', 'beta[12]'))
-stan_rhat(ma_nonlinear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
+stan_rhat(ma_linear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta[4]',
 											 'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 											 'beta[9]', 'beta[10]', 'beta[11]'))
- 
+
+###P..........................Benefit Transfer
+#a) BT Transfer Error
+fit_linear_fresh <- extract(ma_linear_freshwl)
+fit_linear_fresh_can <- extract(ma_linear_freshwl_can)
+
+y_prep_linfresh <- apply(fit_linear_fresh$y_rep, 2, mean) # extract the predicted y at their means : Linear freshwater model
+y_prep_linfresh_can <- apply(fit_linear_fresh_can$y_rep, 2, mean) # extract the predicted y at their means : Linear freshwater model
+
+linfreshwater_TE <- data.frame(cbind(y_prep_linfresh, df_freshwl$lnwtp))
+linfreshwater_TE <- linfreshwater_TE %>%
+	mutate(wtp_y = exp(V2) - 1,
+		   wtp_ypred = exp(y_prep_linfresh) - 1,
+		   TE = abs(wtp_y - wtp_ypred)/wtp_y) 
+
+linfreshwater_can_TE <- data.frame(cbind(y_prep_linfresh_can, df_canada_fresh$lnwtp))
+linfreshwater_can_TE <- linfreshwater_can_TE %>%
+	mutate(wtp_y = exp(V2) - 1,
+		   wtp_ypred = exp(y_prep_linfresh_can) - 1,
+		   TE = abs(wtp_y - wtp_ypred)/wtp_y) 	
+
+write.csv(y_prep_linfresh,"data/y_prep_linfresh.csv")
+write.csv(y_prep_linfresh_can,"data/y_prep_linfresh_can.csv")
+write.csv(linfreshwater_TE,"data/linfreshwater_TE.csv")
+write.csv(linfreshwater_can_TE,"data/linfreshwater_can_TE.csv")
+
+
+
+
+#b) Predictions
+#1) Saskachewan - PHJV Landscapes
+
+ma_linear_freshwl_sask <- stan("code/linearMA_bridgesampling_pred.stan", 
+							   pars = "y_rep", init = init,
+							   data=data_stan_freshwl_sask, iter=n_iter, chains=4)#, seed = seed)
+predictions_sask_freshwater <- extract(ma_linear_freshwl_sask)
+
+ma_linear_freshwl_can_sask <- stan("code/linearMA_bridgesampling_pred.stan", 
+								   pars =  "y_rep", init = init,
+								   data=data_stan_freshwl_can_sask, iter=n_iter, chains=n_chains)#, seed = seed)
+predictions_sask_freshwater_can <- extract(ma_linear_freshwl_can_sask)
+
+#2) Wetland acreage lost since 1960 ---489000ha
+ma_linear_freshwl_prairie <- stan("code/linearMA_bridgesampling_pred_prairie.stan", 
+								   pars =  "y_rep", init = init,
+								   data=data_stan_freshwl_prairie, iter=n_iter, chains=n_chains)#, seed = seed)
+predictions_prairie_freshwater <- extract(ma_linear_freshwl_prairie)
+print(ma_linear_freshwl_can_prairie)
+
+ma_linear_freshwl_can_prairie <- stan("code/linearMA_bridgesampling_pred_prairie.stan", 
+									  pars =  "y_rep", init = init,
+									  data=data_stan_freshwl_can_prairie, iter=n_iter, chains=n_chains)#, seed = seed)
+predictions_prairie_freshwater_can <- extract(ma_linear_freshwl_can_prairie)
+print(ma_linear_freshwl_prairie)

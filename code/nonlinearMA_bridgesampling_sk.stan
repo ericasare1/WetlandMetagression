@@ -13,18 +13,6 @@ data {
   vector[Nnew] q1new; // Policy levels
 }
 
-transformed data{
-  vector[N] y;
-  vector[N] q01;
-  vector[Nnew] q01new;
-  
-  y = lwtp - log(q1- q0);
-  q01 = (q0 + q1) / 2;
-  
-  q01new = (q0new + q1new) / 2;
-
-}
-
 parameters {
   vector[K] beta;
   real gamma;
@@ -32,11 +20,11 @@ parameters {
 }
 
 transformed parameters {
-	vector[N] v; 
+	vector[N] v;
 
-  v = x * beta + gamma * q01;
-}
- 
+  v = x * beta + log((exp(gamma * q1) - exp(gamma * q0)) / gamma);
+ }
+
 model { 
   // Prior
   target += normal_lpdf(beta | 0, 10);
@@ -44,7 +32,7 @@ model {
   target += inv_gamma_lpdf(sigma | 0.5, 0.5);
   //likelihood contribution
   for (i in 1:N){
-  target += normal_lpdf(y[i] | x[i]* beta + gamma * q01[i], sigma);
+  target += normal_lpdf(lwtp[i] | x[i] * beta + log((exp(gamma * q1[i]) - exp(gamma * q0[i])) / gamma), sigma);
   }
 }
 
@@ -53,10 +41,9 @@ generated quantities {
   vector[N] log_lik;
   
   for (n in 1:Nnew) { 
-        y_rep[n] = normal_rng(xnew[n] * beta + gamma * q01new[n] + log(q1new[n]- q0new[n]), sigma);
+        y_rep[n] = normal_rng(xnew[n] * beta, sigma);
         
-        log_lik[n] = normal_lpdf(y[n] | x[n] * beta + gamma * q01[n], sigma);
+        log_lik[n] = normal_lpdf(lwtp[n] | x[n] * beta + log((exp(gamma * q1[n]) - exp(gamma * q0[n])) / gamma), sigma);
   }
   
 }
-
