@@ -306,13 +306,31 @@ linfreshwater_TE <- data.frame(cbind(y_prep_linfresh, df_freshwl$lnwtp))
 linfreshwater_TE <- linfreshwater_TE %>%
 	mutate(wtp_y = exp(V2) - 1,
 		   wtp_ypred = exp(y_prep_linfresh) - 1,
-		   TE = abs(wtp_y - wtp_ypred)/wtp_y) 
+		   TE = (abs(wtp_y - wtp_ypred)/wtp_y)*100) 
+
+linfreshwater_TE_noINF <- linfreshwater_TE[!is.infinite(rowSums(linfreshwater_TE)),]
+hist(linfreshwater_TE_noINF$TE)
+median(linfreshwater_TE_noINF$TE)
+mean(linfreshwater_TE_noINF$TE)
+min(linfreshwater_TE_noINF$TE)
+max(linfreshwater_TE_noINF$TE)
+sd(linfreshwater_TE_noINF$TE)
+
 
 linfreshwater_can_TE <- data.frame(cbind(y_prep_linfresh_can, df_canada_fresh$lnwtp))
 linfreshwater_can_TE <- linfreshwater_can_TE %>%
 	mutate(wtp_y = exp(V2) - 1,
 		   wtp_ypred = exp(y_prep_linfresh_can) - 1,
-		   TE = abs(wtp_y - wtp_ypred)/wtp_y) 	
+		   TE = (abs(wtp_y - wtp_ypred)/wtp_y)*100) 
+
+linfreshwater_can_TE_noINF <- linfreshwater_can_TE[!is.infinite(rowSums(linfreshwater_can_TE)),]
+hist(linfreshwater_can_TE_noINF$TE)
+median(linfreshwater_can_TE_noINF$TE)
+mean(linfreshwater_can_TE_noINF$TE)
+min(linfreshwater_can_TE_noINF$TE)
+max(linfreshwater_can_TE_noINF$TE)
+sd(linfreshwater_can_TE_noINF$TE)
+
 
 write.csv(y_prep_linfresh,"data/y_prep_linfresh.csv")
 write.csv(y_prep_linfresh_can,"data/y_prep_linfresh_can.csv")

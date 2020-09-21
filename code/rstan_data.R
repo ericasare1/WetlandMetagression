@@ -3,6 +3,13 @@
 df_freshwl <- df %>% filter(wlfresh ==1)
 df_canada_fresh <- df_freshwl %>% filter(canada ==1)
 df_canada <- df %>% filter(canada ==1)
+df_us_canfreshwl <- df %>% filter(wlfresh ==1)
+df_us_fresh <- df_freshwl %>% filter(canada ==0)
+
+write.csv(df_us_canfreshwl, "data/df_us_can_freshwl.csv")
+write.csv(df_canada_fresh, "data/df_freshwl_ca.csv")
+write.csv(df_us_fresh, "data/df_freshwl_us.csv")
+
 
 str(df)
 #Whole dataset
@@ -44,6 +51,20 @@ data_stan_freshwl_can <- list(N=nrow(df_canada_fresh),
 
 data_stan_freshwl_can$K <- ncol(data_stan_freshwl_can$x)
 
+#only freshwetlands and us
+n_ind_freshwl_us <- n_distinct(df_us_fresh$studyid)
+data_stan_freshwl_us <- list(N=nrow(df_us_fresh),
+							  S = n_ind_freshwl_us,
+							  lwtp=df_us_fresh$lnwtp,
+							  #				  x=as.matrix(df[,6]),
+							  x=cbind(rep(1,nrow(df_us_fresh)),as.matrix(df_us_fresh[, 5:7]),
+							  		as.matrix(df_us_fresh[, 10:14]), 
+							  		as.matrix(df_us_fresh[, 17:18])), 
+							  q0 = df_us_fresh$q0,
+							  q1 = df_us_fresh$q1)
+
+data_stan_freshwl_can$K <- ncol(data_stan_freshwl_us$x)
+
 ###..................linear Model Prediction Saskatchewan data.................................
 #only freshwetlands
 x_sask <- read_csv("data/phjv_sask.csv")
@@ -84,6 +105,24 @@ data_stan_freshwl_can_sask$K <- ncol(data_stan_freshwl_can_sask$x)
 data_stan_freshwl_can_sask$xnew <- x_sask_can
 data_stan_freshwl_can_sask$Nnew <- nrow(x_sask_can)
 dim(x)
+
+#only freshwetlands and us
+n_ind_freshwl_us <- n_distinct(df_us_fresh$studyid)
+data_stan_freshwl_us_sask <- list(N=nrow(df_us_fresh),
+							 S = n_ind_freshwl_us,
+							 lwtp=df_us_fresh$lnwtp,
+							 #				  x=as.matrix(df[,6]),
+							 x=cbind(rep(1,nrow(df_us_fresh)),as.matrix(df_us_fresh[, 5:7]),
+							 		as.matrix(df_us_fresh[, 10:14]), 
+							 		as.matrix(df_us_fresh[, 17:18])), 
+							 q0 = df_us_fresh$q0,
+							 q1 = df_us_fresh$q1,						  
+							 q0new = x_saskq1q0$q0,
+							 q1new = x_saskq1q0$q1)
+
+data_stan_freshwl_us_sask$K <- ncol(data_stan_freshwl_us_sask$x)
+data_stan_freshwl_us_sask$xnew <- x_sask_can
+data_stan_freshwl_us_sask$Nnew <- nrow(x_sask_can)
 ###..................Nonlinear Model Prediction Prairie data.................................
 #only freshwetlands
 x_prairie <- read_csv("data/ducks_prairie.csv")
