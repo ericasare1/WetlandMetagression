@@ -50,12 +50,10 @@ model {
 
 generated quantities {
   real y_rep[Nnew];
-  vector[N] log_lik;
   
   for (n in 1:Nnew) { 
         y_rep[n] = normal_rng(xnew[n] * beta + gamma * q01new[n] + log(q1new[n]- q0new[n]), sigma);
         
-        log_lik[n] = normal_lpdf(y[n] | x[n] * beta + gamma * q01[n], sigma);
   }
   
 }

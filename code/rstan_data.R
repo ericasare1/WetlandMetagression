@@ -11,6 +11,7 @@ write.csv(df_canada_fresh, "data/df_freshwl_ca.csv")
 write.csv(df_us_fresh, "data/df_freshwl_us.csv")
 
 
+
 str(df)
 #Whole dataset
 n_ind <- n_distinct(df$studyid)
@@ -25,6 +26,8 @@ data_stan_whole <- list(N=nrow(df),
 
 data_stan_whole$K <- ncol(data_stan_whole$x)
 #only freshwetlands
+df_fresh_pred <- read_csv("data/df_fresh_pred.csv")
+
 n_ind_freshwl <- n_distinct(df_freshwl$studyid)
 data_stan_freshwl <- list(N=nrow(df_freshwl),
 						  S = n_ind_freshwl,
@@ -34,9 +37,13 @@ data_stan_freshwl <- list(N=nrow(df_freshwl),
 						  		as.matrix(df_freshwl[, 10:14]), as.matrix(df_freshwl[, 17:18]), 
 						  		as.matrix(df_freshwl[,22])), 
 						  q0 = df_freshwl$q0,
-						  q1 = df_freshwl$q1)
+						  q1 = df_freshwl$q1,
+						  q0new = df_qoq1_pred$q0,
+						  q1new = df_qoq1_pred$q1)
 
 data_stan_freshwl$K <- ncol(data_stan_freshwl$x)
+data_stan_freshwl_sask$xnew <- df_fresh_pred
+data_stan_freshwl_sask$Nnew <- nrow(df_fresh_pred)
 #only freshwetlands and Canada
 n_ind_freshwl_can <- n_distinct(df_canada_fresh$studyid)
 data_stan_freshwl_can <- list(N=nrow(df_canada_fresh),
@@ -52,6 +59,10 @@ data_stan_freshwl_can <- list(N=nrow(df_canada_fresh),
 data_stan_freshwl_can$K <- ncol(data_stan_freshwl_can$x)
 
 #only freshwetlands and us
+df_us_pred <- read_csv("data/df_fresh__us_pred.csv")
+df_qoq1_pred <- read_csv("data/df_fresh_qo_q1.csv")
+
+
 n_ind_freshwl_us <- n_distinct(df_us_fresh$studyid)
 data_stan_freshwl_us <- list(N=nrow(df_us_fresh),
 							  S = n_ind_freshwl_us,
@@ -61,9 +72,13 @@ data_stan_freshwl_us <- list(N=nrow(df_us_fresh),
 							  		as.matrix(df_us_fresh[, 10:14]), 
 							  		as.matrix(df_us_fresh[, 17:18])), 
 							  q0 = df_us_fresh$q0,
-							  q1 = df_us_fresh$q1)
+							  q1 = df_us_fresh$q1,
+							  q0new = df_qoq1_pred$q0,
+							  q1new = df_qoq1_pred$q1)
 
-data_stan_freshwl_can$K <- ncol(data_stan_freshwl_us$x)
+data_stan_freshwl_us$K <- ncol(data_stan_freshwl_us$x)
+data_stan_freshwl_sask$xnew <- df_us_pred 
+data_stan_freshwl_sask$Nnew <- nrow(df_us_pred )
 
 ###..................linear Model Prediction Saskatchewan data.................................
 #only freshwetlands
@@ -104,8 +119,6 @@ data_stan_freshwl_can_sask <- list(N=nrow(df_canada_fresh),
 data_stan_freshwl_can_sask$K <- ncol(data_stan_freshwl_can_sask$x)
 data_stan_freshwl_can_sask$xnew <- x_sask_can
 data_stan_freshwl_can_sask$Nnew <- nrow(x_sask_can)
-dim(x)
-
 #only freshwetlands and us
 n_ind_freshwl_us <- n_distinct(df_us_fresh$studyid)
 data_stan_freshwl_us_sask <- list(N=nrow(df_us_fresh),
@@ -123,6 +136,7 @@ data_stan_freshwl_us_sask <- list(N=nrow(df_us_fresh),
 data_stan_freshwl_us_sask$K <- ncol(data_stan_freshwl_us_sask$x)
 data_stan_freshwl_us_sask$xnew <- x_sask_can
 data_stan_freshwl_us_sask$Nnew <- nrow(x_sask_can)
+
 ###..................Nonlinear Model Prediction Prairie data.................................
 #only freshwetlands
 x_prairie <- read_csv("data/ducks_prairie.csv")
@@ -161,4 +175,6 @@ data_stan_freshwl_can_prairie <- list(N=nrow(df_canada_fresh),
 data_stan_freshwl_can_prairie$K <- ncol(data_stan_freshwl_can_prairie$x)
 data_stan_freshwl_can_prairie$xnew <- x_prairie_can
 data_stan_freshwl_can_prairie$Nnew <- nrow(x_prairie_can)
+
+colnames(df_canada_fresh)
 

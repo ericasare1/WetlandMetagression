@@ -21,11 +21,11 @@ grouped_wlfresh <- meta_data %>% group_by(wlfresh) %>% descr(stats = "common") %
 grouped_canada <- meta_data %>% group_by(canada) %>% descr(stats = "common") %>% tb()
 
 #saving data
-write_csv(sum_whole, "output/sum_whole.csv")
-write_csv(grouped_wlfresh , "output/grouped_wlfresh.csv")
-write_csv(grouped_canada, "output/grouped_canada.csv")
+write_csv(sum_whole, "output/sum_whole1.csv")
+write_csv(grouped_wlfresh , "output/grouped_wlfresh1.csv")
+write_csv(grouped_canada, "output/grouped_canada1.csv")
 
-	
+
 	
 
 

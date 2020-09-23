@@ -56,9 +56,12 @@ df %>%
 #Graph of lnwtp vrs lnacres for full data
 df %>%
 	mutate(lnacres = log((q1-q0)*1000)) %>%
-	ggplot(aes(x=lnacres, y = lnwtp, label=canada))+
+	ggplot(aes(x=lnacres, y = lnwtp, label=canada)) +
 	geom_point() +
-	geom_text(aes(label=canada),hjust=0, vjust=0)
+	geom_text(aes(label=canada),hjust=0, vjust=0) + theme_bw() +
+	labs(x = "Log(Acres)", y = "log(WTP)")
+
+
 summary(df)
 
 #Graph of lnwtp vrs lnacres for freshwater data
@@ -67,7 +70,7 @@ df %>%
 	filter(wlfresh == 1) %>%
 	ggplot(aes(x=lnacres, y = lnwtp, label=canada))+
 	geom_point() +
-	geom_text(aes(label=canada),hjust=0, vjust=0)
+	geom_text(aes(label=canada),hjust=0, vjust=0) + bw()
 summary(df)
 #Bayesia models
 source("code/rstan_data.R")
@@ -91,10 +94,14 @@ ma_linear_freshwl <- stan("code/linearMA_bridgesampling.stan",
 ma_linear_freshwl_can <- stan("code/linearMA_bridgesampling.stan", 
 							  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
 							  data=data_stan_freshwl_can, iter=n_iter, chains=n_chains)#, seed = seed)
-
+ma_linear_freshwl_us <- stan("code/linearMA_bridgesampling.stan", 
+							  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+							  data=data_stan_freshwl_us, iter=12000, chains=n_chains)#, seed = seed)
+print(ma_linear_freshwl_us)
 save(ma_linear, file="output/ma_linear.RData")
 save(ma_linear_freshwl, file="output/ma_linear_freshwl.RData")
 save(ma_linear_freshwl_can, file="output/ma_linear_freshwl_can.RData")
+save(ma_linear_freshwl_us, file="output/ma_linear_freshwl_us.RData")
 
 ## nonLinear model (M1c from Moeltner paper)
 ma_nonlinear <- stan("code/nonlinearMA_bridgesampling.stan", 
@@ -106,41 +113,65 @@ ma_nonlinear_freshwl <- stan("code/nonlinearMA_bridgesampling.stan",
 ma_nonlinear_freshwl_can <- stan("code/nonlinearMA_bridgesampling.stan", 
 								 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
 								 data=data_stan_freshwl_can, iter=n_iter, chains=n_chains)#, seed = seed)
-
+ma_nonlinear_freshwl_us <- stan("code/nonlinearMA_bridgesampling.stan", 
+								 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+								 data=data_stan_freshwl_us, iter=n_iter, chains=n_chains)#, seed = seed)
+print(ma_nonlinear_freshwl_us)
 save(ma_nonlinear, file="output/ma_nonlinear.RData")
 save(ma_nonlinear_freshwl, file="output/ma_nonlinear_freshwl.RData")
 save(ma_nonlinear_freshwl_can, file="output/ma_nonlinear_freshwl_can.RData")
+save(ma_nonlinear_freshwl_us, file="output/ma_nonlinear_freshwl_us.RData")
+
 
 #Posterior Diagnostics
 #Model comparison: Bayes factor
 library(bridgesampling)
 # compute (log) marginal likelihoods ###
+load("output/ma_nonlinear.RData")
+load("output/ma_nonlinear_freshwl.RData")
+load("output/ma_nonlinear_freshwl_can.RData")
+load("output/ma_nonlinear_freshwl_us.RData")
+load("output/ma_linear.RData")
+load("output/ma_linear_freshwl.RData")
+load("output/ma_linear_freshwl_can.RData")
+load("output/ma_linear_freshwl_us.RData")
+
 set.seed(1)
 bridge_lin_whole <- bridge_sampler(ma_linear)
 bridge_lin_freshwl <- bridge_sampler(ma_linear_freshwl)
 bridge_lin_freshwl_can <- bridge_sampler(ma_linear_freshwl_can)
+bridge_lin_freshwl_us <- bridge_sampler(ma_linear_freshwl_us)
+
 bridge_nonlin_whole <- bridge_sampler(ma_nonlinear)
 bridge_nonlin_freshwl <- bridge_sampler(ma_nonlinear_freshwl)
 bridge_nonlin_freshwl_can <- bridge_sampler(ma_nonlinear_freshwl_can)
+bridge_nonlin_freshwl_us <- bridge_sampler(ma_nonlinear_freshwl_us)
+
 #compute log marginal likelihood
 print(bridge_lin_whole)
 print(bridge_lin_freshwl)
 print(bridge_lin_freshwl_can)
+print(bridge_lin_freshwl_us)
 print(bridge_nonlin_whole)
 print(bridge_nonlin_freshwl)
 print(bridge_nonlin_freshwl_can)
+print(bridge_nonlin_freshwl_us)
 
 ### compute Bayes factor ###
 bf(bridge_lin_whole, bridge_nonlin_whole) #BF :1.12
 bf(bridge_lin_whole, bridge_lin_freshwl) #BF : 0.00
 #..Relative Mean Square Errors
-summary(bridge_lin_freshwl)
-summary(bridge_lin_freshwl_can)
 summary(bridge_lin_whole)
 summary(bridge_nonlin_whole)
+
+summary(bridge_lin_freshwl)
 summary(bridge_nonlin_freshwl)
+
+summary(bridge_lin_freshwl_can)
 summary(bridge_nonlin_freshwl_can)
 
+summary(bridge_lin_freshwl_us)
+summary(bridge_nonlin_freshwl_us)
 
 #model comparison: Loo
 library(loo)
@@ -150,9 +181,12 @@ library(loo)
 loo_whole_lin <- loo(ma_linear, save_psis = TRUE)
 loo_wh_fresh_lin <- loo(ma_linear_freshwl, save_psis = TRUE)
 loo_wh_fresh_lin_can <- loo(ma_linear_freshwl_can, save_psis = TRUE)
+loo_wh_fresh_lin_us <- loo(ma_linear_freshwl_us, save_psis = TRUE)
+
 loo_whole_nonlin <- loo(ma_nonlinear, save_psis = TRUE)
 loo_wh_fresh_nonlin <- loo(ma_nonlinear_freshwl, save_psis = TRUE)
 loo_wh_fresh_nonlin_can <- loo(ma_nonlinear_freshwl_can, save_psis = TRUE)
+loo_wh_fresh_nonlin_us <- loo(ma_nonlinear_freshwl_us, save_psis = TRUE)
 
 #Comparing the models on expected log predictive density
 model_com_lin_nonlin <- loo_compare(loo_whole_lin, loo_whole_nonlin) #linear model preferred based on low predictive error based on Loo CV
@@ -167,8 +201,14 @@ plot(loo_wh_fresh_lin_can)
 fit_wh_fresh_lin <- extract(ma_linear_freshwl)
 y_rep_wh_fresh_lin <- fit_wh_fresh_lin$y_rep
 
-fit_fresh_can_lin <- extract(ma_linear_freshwl_can)
-y_rep_fresh_can_lin <- fit_fresh_can_lin$y_rep
+fit_fresh_us_lin <- extract(ma_linear_freshwl_us)
+y_rep_fresh_us_lin <- fit_fresh_us_lin$y_rep
+
+fit_wh_fresh_nonlin <- extract(ma_nonlinear_freshwl)
+y_rep_wh_fresh_nonlin <- fit_wh_fresh_nonlin$y_rep
+
+fit_fresh_us_nonlin <- extract(ma_nonlinear_freshwl_us)
+y_rep_fresh_us_nonlin <- fit_fresh_us_nonlin$y_rep
 
 #Marginal posterior predictive checks_linear
 whole_fresh_lin <- ppc_loo_pit_overlay(
@@ -177,14 +217,28 @@ whole_fresh_lin <- ppc_loo_pit_overlay(
 	lw = weights(loo_wh_fresh_lin$psis_object)
 )
 
-#loo_wh_fresh_nonlin_can <- loo(ma_nonlinear_freshwl_can, save_psis = TRUE)
+#loo_wh_fresh_lin_can <- loo(ma_nonlinear_freshwl_can, save_psis = TRUE)
 
-whole_fresh_lin_can <- ppc_loo_pit_overlay(
-	y = df_canada_fresh$lnwtp,
-	yrep = y_rep_fresh_can_lin,
-	lw = weights(loo_wh_fresh_lin_can$psis_object)
+whole_fresh_lin_us <- ppc_loo_pit_overlay(
+	y = df_us_fresh$lnwtp,
+	yrep = y_rep_fresh_us_lin,
+	lw = weights(loo_wh_fresh_lin_us$psis_object)
 )
 
+
+whole_fresh_nonlin <- ppc_loo_pit_overlay(
+	y = df_freshwl$lnwtp,
+	yrep = y_rep_wh_fresh_nonlin,
+	lw = weights(loo_wh_fresh_nonlin$psis_object)
+)
+
+#loo_wh_fresh_nonlin_can <- loo(ma_nonlinear_freshwl_can, save_psis = TRUE)
+
+whole_fresh_nonlin_us <- ppc_loo_pit_overlay(
+	y = df_us_fresh$lnwtp,
+	yrep = y_rep_fresh_us_nonlin,
+	lw = weights(loo_wh_fresh_nonlin_us$psis_object)
+)
 #summary of results--Linear
 #library(devtools)
 #devtools::install_github("strengejacke/sjstats")
@@ -295,27 +349,67 @@ stan_rhat(ma_linear_freshwl_can, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'beta
 											 'beta[9]', 'beta[10]', 'beta[11]'))
 
 ###P..........................Benefit Transfer
-#a) BT Transfer Error
-fit_linear_fresh <- extract(ma_linear_freshwl)
+
+ma_linear_freshwl_pred <- stan("code/linearMA_bridgesampling_pred.stan", 
+						  pars = c("y_rep"),init = init,
+						  data=data_stan_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
+print(ma_linear_freshwl_pred)
+
+ma_linear_freshwl_us_pred <- stan("code/linearMA_bridgesampling_pred.stan", 
+							 pars = "y_rep", init = init,
+							 data=data_stan_freshwl_us, iter= 12000, chains= n_chains)#, seed = seed)
+print(ma_linear_freshwl_us_pred)
+exp(5) -1
+ #a) BT Transfer Error
+fit_linear_fresh <- extract(ma_linear_freshwl_pred)
+fit_linear_fresh_us <- extract(ma_linear_freshwl_us_pred)
 fit_linear_fresh_can <- extract(ma_linear_freshwl_can)
 
-y_prep_linfresh <- apply(fit_linear_fresh$y_rep, 2, mean) # extract the predicted y at their means : Linear freshwater model
-y_prep_linfresh_can <- apply(fit_linear_fresh_can$y_rep, 2, mean) # extract the predicted y at their means : Linear freshwater model
+y_prep_linfresh <- apply(fit_linear_fresh$y_rep, 2, mean) # extract the predicted y : Linear freshwater model
+y_prep_linfresh_us <- apply(fit_linear_fresh_us$y_rep, 2, mean) # extract the predicted y: Linear freshwater model
+y_prep_linfresh_can <- apply(fit_linear_fresh_can$y_rep, 2, mean) # extract the predicted y: Linear freshwater model
 
-linfreshwater_TE <- data.frame(cbind(y_prep_linfresh, df_freshwl$lnwtp))
+#lin_freshwater
+linfreshwater_TE <- data.frame(y_prep_linfresh, df_canada_fresh$lnwtp)
+
 linfreshwater_TE <- linfreshwater_TE %>%
-	mutate(wtp_y = exp(V2) - 1,
+	mutate(wtp_y = exp(df_canada_fresh.lnwtp) - 1,
 		   wtp_ypred = exp(y_prep_linfresh) - 1,
+		   TE = (abs(wtp_y - wtp_ypred)/wtp_y)*100)
+
+linfreshwater_TE %>% 
+	ggplot(aes(x=df_canada_fresh.lnwtp, y = y_prep_linfresh)) +
+	geom_point() +
+	theme_bw() +
+	geom_line(aes(x=df_canada_fresh.lnwtp, y = df_canada_fresh.lnwtp)) + 
+	labs(x = "Log(WTP)", y = "log(Predicted WTP)")
+
+write_csv(linfreshwater_TE, "output/linfreshwater_TE.csv")
+#linfreshwater_TE_noINF <- linfreshwater_TE[!is.infinite(rowSums(linfreshwater_TE)),]
+hist(linfreshwater_TE$TE)
+median(linfreshwater_TE$TE)
+mean(linfreshwater_TE$TE)
+
+linfreshwater_us_TE <- data.frame(cbind(y_prep_linfresh_us, df_canada_fresh$lnwtp))
+linfreshwater_us_TE <- linfreshwater_us_TE %>%
+	mutate(wtp_y = exp(V2) - 1,
+		   wtp_ypred = exp(y_prep_linfresh_us) - 1,
 		   TE = (abs(wtp_y - wtp_ypred)/wtp_y)*100) 
 
-linfreshwater_TE_noINF <- linfreshwater_TE[!is.infinite(rowSums(linfreshwater_TE)),]
-hist(linfreshwater_TE_noINF$TE)
-median(linfreshwater_TE_noINF$TE)
-mean(linfreshwater_TE_noINF$TE)
-min(linfreshwater_TE_noINF$TE)
-max(linfreshwater_TE_noINF$TE)
-sd(linfreshwater_TE_noINF$TE)
+linfreshwater_us_TE %>% 
+	ggplot(aes(x=V2 , y = y_prep_linfresh)) +
+	geom_point() +
+	theme_bw() +
+	geom_line(aes(x=V2, y = V2)) +
+    labs(x = "Log(WTP)", y = "log(Predicted WTP)")
 
+write_csv(linfreshwater_us_TE, "output/linfreshwater_us_TE.csv")
+
+
+#linfreshwater_can_TE_noINF <- linfreshwater_can_TE[!is.infinite(rowSums(linfreshwater_can_TE)),]
+hist(linfreshwater_us_TE$TE)
+median(linfreshwater_us_TE$TE)
+mean(linfreshwater_us_TE$TE)
 
 linfreshwater_can_TE <- data.frame(cbind(y_prep_linfresh_can, df_canada_fresh$lnwtp))
 linfreshwater_can_TE <- linfreshwater_can_TE %>%
@@ -323,14 +417,18 @@ linfreshwater_can_TE <- linfreshwater_can_TE %>%
 		   wtp_ypred = exp(y_prep_linfresh_can) - 1,
 		   TE = (abs(wtp_y - wtp_ypred)/wtp_y)*100) 
 
-linfreshwater_can_TE_noINF <- linfreshwater_can_TE[!is.infinite(rowSums(linfreshwater_can_TE)),]
-hist(linfreshwater_can_TE_noINF$TE)
-median(linfreshwater_can_TE_noINF$TE)
-mean(linfreshwater_can_TE_noINF$TE)
-min(linfreshwater_can_TE_noINF$TE)
-max(linfreshwater_can_TE_noINF$TE)
-sd(linfreshwater_can_TE_noINF$TE)
+linfreshwater_can_TE %>% 
+	ggplot(aes(x=V2 , y = y_prep_linfresh_can)) +
+	geom_point() +
+	theme_bw() +
+	geom_line(aes(x=V2, y = V2)) +
+	labs(x = "Log(WTP)", y = "log(Predicted WTP)")
 
+write_csv(linfreshwater_can_TE, "output/linfreshwater_can_TE.csv")
+
+#linfreshwater_can_TE_noINF <- linfreshwater_can_TE[!is.infinite(rowSums(linfreshwater_can_TE)),]
+hist(linfreshwater_can_TE$TE)
+median(linfreshwater_can_TE$TE)
 
 write.csv(y_prep_linfresh,"data/y_prep_linfresh.csv")
 write.csv(y_prep_linfresh_can,"data/y_prep_linfresh_can.csv")
@@ -339,13 +437,26 @@ write.csv(linfreshwater_can_TE,"data/linfreshwater_can_TE.csv")
 
 #b) Predictions
 #1) Saskachewan - PHJV Landscapes
+ma_linear_freshwl_sak_pred <- stan("code/linearMA_bridgesampling_pred.stan", 
+								  pars = "y_rep", init = init,
+								  data=data_stan_freshwl_can_sask, iter= 12000, chains= n_chains)#, seed = seed)
+print(ma_linear_freshwl_sak_pred)
 
-ma_linear_freshwl_sask <- stan("code/linearMA_bridgesampling_pred.stan", 
-							   pars = "y_rep", init = init,
-							   data=data_stan_freshwl_sask, iter=n_iter, chains=4)#, seed = seed)
-predictions_sask_freshwater <- extract(ma_linear_freshwl_sask)
+#mean(as.numeric(unlist((y_pred_sak["y_rep.1"]))))
+sask_predictions <- read_csv("data/fresh_can_sask_predictions.csv")
 
-ma_linear_freshwl_can_sask <- stan("code/linearMA_bridgesampling_pred.stan", 
-								   pars =  "y_rep", init = init,
-								   data=data_stan_freshwl_can_sask, iter=n_iter, chains=n_chains)#, seed = seed)
-predictions_sask_freshwater_can <- extract(ma_linear_freshwl_can_sask)
+sask_predictions %>% mutate(lnacres = log(q1)) %>%
+	ggplot(aes(x= q1, y = wtp, label = PHJV )) +
+	geom_point() +
+	theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+	theme_bw() +
+	geom_text(check_overlap = TRUE, hjust=0.5, vjust=0, size = 0.1) +
+	labs(x = "Estimated Restoration Wetland Acres", y = "WTP (CAN$ 2017)")
+
+sask_predictions %>%
+	ggplot(aes(x= PHJV, y = wtp)) +
+	geom_bar(stat="identity") +
+	theme_bw() +
+	theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+	labs(x = "PHJV Landscape", y = "WTP (CAN$ 2017)")
+

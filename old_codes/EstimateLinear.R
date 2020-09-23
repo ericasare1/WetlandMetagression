@@ -18,7 +18,6 @@ summary(df)
 
 # Set seed
 seed = "12345"
-
 # Choose number of iterations for models
 n_iter <- 10000
 n_chains <- 4

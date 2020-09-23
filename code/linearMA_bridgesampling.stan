@@ -1,28 +1,22 @@
 
 data {
   int<lower=0> N; // number of observations
-  int<lower=0> Nnew; // number of observations
   int<lower=0> K; // number of predictors
   int<lower=0> S; // number of studies
   vector[N] lwtp; // logged wtp
   matrix[N, K] x; // matrix of predictors
-  matrix[Nnew, K] xnew; // matrix of predictors
   vector[N] q0; // SQ levels
   vector[N] q1; // Policy levels
-  vector[Nnew] q0new; // SQ levels
-  vector[Nnew] q1new; // Policy levels
+
 }
 
 transformed data{
   vector[N] y;
   vector[N] q01;
-  vector[Nnew] q01new;
-  
+
   y = lwtp - log(q1- q0);
   q01 = (q0 + q1) / 2;
   
-  q01new = (q0new + q1new) / 2;
-
 }
 
 parameters {
@@ -49,11 +43,11 @@ model {
 }
 
 generated quantities {
-  real y_rep[Nnew];
+  real y_rep[N];
   vector[N] log_lik;
   
-  for (n in 1:Nnew) { 
-        y_rep[n] = normal_rng(xnew[n] * beta + gamma * q01new[n] + log(q1new[n]- q0new[n]), sigma);
+  for (n in 1:N) { 
+        y_rep[n] = normal_rng(x[n] * beta + gamma * q01[n] + log(q1[n]- q0[n]), sigma);
         
         log_lik[n] = normal_lpdf(y[n] | x[n] * beta + gamma * q01[n], sigma);
   }
