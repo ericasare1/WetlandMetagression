@@ -16,10 +16,12 @@ data {
 transformed data{
   vector[N] y;
   vector[N] q01;
+  vector[Nnew] q01new;
 
   y = lwtp - log(q1- q0);
   q01 = (q0 + q1) / 2;
-  
+  q01new = (q0new + q1new) / 2;
+ 
 }
 
 parameters {
@@ -30,13 +32,9 @@ parameters {
 
 transformed parameters {
 	vector[N] v; 
-  vector[Nnew] q01new;
-  
-  y = lwtp - log(q1- q0);
-  q01 = (q0 + q1) / 2;
-  
-  q01new = (q0new + q1new) / 2;
 
+  v = x * beta + gamma * q01;
+  
 }
  
 model { 
@@ -59,6 +57,9 @@ generated quantities {
   y_rep[n] = normal_rng(xnew[n] * beta + gamma * q01new[n] + log(q1new[n]- q0new[n]), sigma);
  
   }
-  
+ 
+  for (n in 1:N) { 
+        log_lik[n] = normal_lpdf(lwtp[n] | x[n] * beta + log((exp(gamma * q1[n]) - exp(gamma * q0[n])) / gamma), sigma);
+  }
 }
 
