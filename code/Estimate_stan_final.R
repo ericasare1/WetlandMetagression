@@ -433,6 +433,23 @@ sask_phjv_predictions %>%
 	theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
 	labs(x = "PHJV Landscape", y = "WTP (CAN$ 2017)")
 
+
+#2) Prairie Historical Wetland Loss
+ma_nonlinear_freshwl_can_pr <-  stan("code/nonlinearMA_bridgesampling_sk.stan", 
+									 pars = c( "y_rep"), init = init,
+									 data=data_stan_freshwl_can_prairie, iter=n_iter, chains=n_chains)#, seed = seed) the gamma since it is approximately 0 and causing division by 0 problem in the predictions
+print(ma_nonlinear_freshwl_can_pr)
+wtp_prairie_wetlandloss <- exp(3.37) -1  #28.08
+
+
+
+
+
+
+
+
+
+
 hist(nlinfreshwater_can_TE$TE)
 median(linfreshwater_can_TE$TE)
 sd(linfreshwater_can_TE$TE)
