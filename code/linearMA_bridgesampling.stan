@@ -53,6 +53,7 @@ generated quantities {
   real y_rep[N];
   vector[N] log_lik;
   
+
   for (n in 1:Nnew) { 
         y_rep[n] = normal_rng(xnew[n] * beta + gamma * q01new[n] + log(q1new[n]- q0new[n]), sigma);
         

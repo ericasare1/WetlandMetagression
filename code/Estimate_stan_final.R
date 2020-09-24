@@ -110,10 +110,11 @@ ma_nonlinear <- stan("code/nonlinearMA_bridgesampling.stan",
 ma_nonlinear_freshwl <- stan("code/nonlinearMA_bridgesampling.stan", 
 							 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
 							 data=data_stan_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
-print(ma_nonlinear_freshwl_us)
+print(ma_nonlinear_freshwl_can)
 ma_nonlinear_freshwl_can <- stan("code/nonlinearMA_bridgesampling_can.stan", 
-								 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
-								 data=data_stan_freshwl_can, iter=n_iter, chains=n_chains)#, seed = seed)
+								 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"), #init = init,
+								 data=data_stan_freshwl_can, iter=100, chains=1)#, seed = seed)
+
 ma_nonlinear_freshwl_us <- stan("code/nonlinearMA_bridgesampling.stan", 
 								 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
 								 data=data_stan_freshwl_us, iter=n_iter, chains=n_chains)#, seed = seed)
@@ -391,26 +392,54 @@ nonlinfreshwater_can_TE %>%
 	geom_line(aes(x=V2, y = V2)) +
 	labs(x = "Log(WTP)", y = "log(Predicted WTP)")
 
-hist(linfreshwater_can_TE$TE)
+hist(nonlinfreshwater_can_TE$TE)
+median(nonlinfreshwater_can_TE$TE)
+sd(nonlinfreshwater_can_TE$TE)
+
+write_csv(nonlinfreshwater_can_TE, "data/nonlinfreshwater_can_TE.csv")
+
+#b) Predictions
+#1) Saskachewan - PHJV Landscapes
+ma_nonlinear_freshwl_can_sk <-  stan("code/nonlinearMA_bridgesampling_sk.stan", 
+										 pars = c( "y_rep"), init = init,
+										 data=data_stan_freshwl_can_sask, iter=n_iter, chains=4)#, seed = seed) the gamma since it is approximately 0 and causing division by 0 problem in the predictions
+print(ma_nonlinear_freshwl_can_sk)
+
+fit_nonlinear_fresh_can_sk <- extract(ma_nonlinear_freshwl_can_sk)
+y_prep_nonlinfresh_sk <- apply(fit_nonlinear_fresh_can_sk$y_rep, 2, mean) # extract the predicted y : Linear freshwater model
+
+#x_saskq1q0 <- read_csv("data/phjv_sask_q0q1.csv")
+#x_saskq1q0 <- x_saskq1q0 %>% select(-starts_with("X")) %>% na.omit()
+
+nonlinfreshwater_can_sk <- data.frame(y_prep_nonlinfresh_sk)
+nonlinfreshwater_can_sk <- nonlinfreshwater_can_sk %>%
+	mutate(wtp_ypred = exp(y_prep_nonlinfresh_sk) - 1) %>%
+	cbind.data.frame(x_saskq1q0)
+
+write_csv(nonlinfreshwater_can_sk, "data/sask_phjv_predictions.csv")
+sask_phjv_predictions <- read_csv("data/sask_phjv_predictions.csv")
+
+nonlinfreshwater_can_sk %>% 
+	ggplot(aes(x= log(q1) , y = wtp_ypred)) +
+	geom_point() +
+	theme_bw() +
+	labs(x = "Estimated Restoration Wetland Acres", y = "WTP (CAN$ 2017)")
+max(nonlinfreshwater_can_sk$wtp_ypred)
+
+sask_phjv_predictions %>%
+	ggplot(aes(x= PHJV, y = wtp_ypred)) +
+	geom_bar(stat="identity") +
+	theme_bw() +
+	theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+	labs(x = "PHJV Landscape", y = "WTP (CAN$ 2017)")
+
+hist(nlinfreshwater_can_TE$TE)
 median(linfreshwater_can_TE$TE)
 sd(linfreshwater_can_TE$TE)
 
 write_csv(linfreshwater_can_TE, "data/linfreshwater_can_TE.csv")
 
-#b) Predictions
-#1) Saskachewan - PHJV Landscapes
-ma_nonlinear_freshwl_can_sk <- stan("code/nonlinearMA_bridgesampling_can.stan", 
-								 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"), init = init,
-								 data=data_stan_freshwl_can_sask, iter=n_iter, chains=n_chains)
 
-ma_nonlinear_freshwl_sak_pred <- stan("code/nonlinearMA_bridgesampling.stan", 
-								  pars = "y_rep", init = init,
-								  data=data_stan_freshwl_can_sask, iter= 12000, chains= n_chains)#, seed = seed)
-print(ma_nonlinear_freshwl_can_sk)
-
-fit_nonlinear_fresh_can <- extract(ma_nonlinear_freshwl_can)
-
-y_prep_nonlinfresh <- apply(fit_nonlinear_fresh$y_rep, 2, mean) # extract the predicted y : Linear freshwater model
 
 #mean(as.numeric(unlist((y_pred_sak["y_rep.1"]))))
 sask_predictions <- read_csv("data/fresh_can_sask_predictions.csv")

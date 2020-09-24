@@ -5,12 +5,13 @@ data {
   int<lower=0> K; // number of predictors
   int<lower=0> S; // number of studies
   vector[N] lwtp; // logged wtp
-  matrix[N, K] x; // matrix of predictors
   matrix[Nnew, K] xnew; // matrix of predictors
+  matrix[N, K] x; // matrix of predictors
   vector[N] q0; // SQ levels
   vector[N] q1; // Policy levels
   vector[Nnew] q0new; // SQ levels
   vector[Nnew] q1new; // Policy levels
+
 }
 
 parameters {
@@ -33,7 +34,7 @@ model {
   //likelihood contribution
   for (i in 1:N){
   target += normal_lpdf(lwtp[i] | x[i] * beta + log((exp(gamma * q1[i]) - exp(gamma * q0[i])) / gamma), sigma);
-  }
+  } 
 }
 
 generated quantities {
@@ -42,7 +43,8 @@ generated quantities {
   
   for (n in 1:Nnew) { 
         y_rep[n] = normal_rng(xnew[n] * beta, sigma);
-        
+}
+  for (n in 1:N) { 
         log_lik[n] = normal_lpdf(lwtp[n] | x[n] * beta + log((exp(gamma * q1[n]) - exp(gamma * q0[n])) / gamma), sigma);
   }
   
