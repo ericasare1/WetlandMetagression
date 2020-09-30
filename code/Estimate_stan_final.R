@@ -365,7 +365,7 @@ nonlinfreshwater_TE <- nonlinfreshwater_TE %>%
 		   TE = (abs(wtp_y - wtp_ypred)/wtp_y)*100,
 		   TE_bt = (abs(wtp_y - wtp_ypred)/wtp_y)*100)
 
-#BT insample
+#BT insample for mean unit transfer error 
 nonlinfreshwater_TE <- read_csv("data/nonlinfreshwater_TE.csv")
 nonlinfreshwater_TE <- nonlinfreshwater_TE %>%
 	mutate(TE_bt = (abs(wtp_y - mean(wtp_y)/wtp_y)*100)) %>% View()
