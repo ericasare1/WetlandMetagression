@@ -343,7 +343,8 @@ nonlinfreshwater_TE <- data.frame(y_prep_nonlinfresh, df_canada_fresh$lnwtp)
 nonlinfreshwater_TE <- nonlinfreshwater_TE %>%
 	mutate(wtp_y = exp(df_canada_fresh.lnwtp) - 1,
 		   wtp_ypred = exp(y_prep_nonlinfresh) - 1,
-		   TE = (abs(wtp_y - wtp_ypred)/wtp_y)*100)
+		   TE = (abs(wtp_y - wtp_ypred)/wtp_y)*100,
+		   TE_bt = (abs(wtp_y - wtp_ypred)/wtp_y)*100)
 
 nonlinfreshwater_TE %>% 
 	ggplot(aes(x=df_canada_fresh.lnwtp, y = y_prep_nonlinfresh)) +
@@ -358,12 +359,23 @@ mean(linfreshwater_TE$TE)
 
 write_csv(nonlinfreshwater_TE, "data/nonlinfreshwater_TE.csv")
 
+nonlinfreshwater_TE <- nonlinfreshwater_TE %>%
+	mutate(wtp_y = exp(df_canada_fresh.lnwtp) - 1,
+		   wtp_ypred = exp(y_prep_nonlinfresh) - 1,
+		   TE = (abs(wtp_y - wtp_ypred)/wtp_y)*100,
+		   TE_bt = (abs(wtp_y - wtp_ypred)/wtp_y)*100)
+
+#BT insample
+nonlinfreshwater_TE <- read_csv("data/nonlinfreshwater_TE.csv")
+nonlinfreshwater_TE <- nonlinfreshwater_TE %>%
+	mutate(TE_bt = (abs(wtp_y - mean(wtp_y)/wtp_y)*100)) %>% View()
+median(nonlinfreshwater_TE$wtp_y)
+
 #nonlinear Freshwater US Meta Function
 nonlinfreshwater_us_TE <- data.frame(cbind(y_prep_nonlinfresh_us, df_canada_fresh$lnwtp))
 nonlinfreshwater_us_TE <- nonlinfreshwater_us_TE %>%
-	mutate(wtp_y = exp(V2) - 1,
-		   wtp_ypred = exp(y_prep_nonlinfresh_us) - 1,
-		   TE = (abs(wtp_y - wtp_ypred)/wtp_y)*100) 
+	mutate(TE_bt = (abs(wtp_y - mean(wtp_y)/wtp_y)*100)) 
+
 
 nonlinfreshwater_us_TE %>% 
 	ggplot(aes(x=V2 , y = y_prep_nonlinfresh)) +
@@ -377,7 +389,6 @@ median(linfreshwater_us_TE$TE)
 mean(linfreshwater_us_TE$TE)
 
 write_csv(nonlinfreshwater_us_TE, "data/nonlinfreshwater_us_TE.csv")
-
 
 # NonLinear Freshwater Canada Meta Function
 nonlinfreshwater_can_TE <- data.frame(cbind(y_prep_nonlinfresh_can, df_canada_fresh$lnwtp))
