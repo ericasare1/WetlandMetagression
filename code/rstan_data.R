@@ -2,6 +2,7 @@
 
 df_freshwl <- df %>% filter(wlfresh ==1)
 df_canada_fresh <- df_freshwl %>% filter(canada ==1)
+df_canada_fresh1 <- df_canada_fresh[-1,]
 df_canada <- df %>% filter(canada ==1)
 df_us_canfreshwl <- df %>% filter(wlfresh ==1)
 df_us_fresh <- df_freshwl %>% filter(canada ==0)
@@ -57,6 +58,19 @@ data_stan_freshwl_can <- list(N=nrow(df_canada_fresh),
 							  q1 = df_canada_fresh$q1)
 
 data_stan_freshwl_can$K <- ncol(data_stan_freshwl_can$x)
+
+n_ind_freshwl_can1 <- n_distinct(df_canada_fresh1$studyid)
+data_stan_freshwl_can1 <- list(N=nrow(df_canada_fresh1),
+							  S = n_ind_freshwl_can1,
+							  lwtp=df_canada_fresh1$lnwtp,
+							  #				  x=as.matrix(df[,6]),
+							  x=cbind(rep(1,nrow(df_canada_fresh1)),as.matrix(df_canada_fresh1[, 5:7]),
+							  		as.matrix(df_canada_fresh1[, 10:14]), 
+							  		as.matrix(df_canada_fresh1[, 17:18])), 
+							  q0 = x_saskq1q0$q0,
+							  q1 = x_saskq1q0$q1)
+
+data_stan_freshwl_can1$K <- ncol(data_stan_freshwl_can1$x)
 
 #only freshwetlands and us
 df_us_pred <- read_csv("data/df_fresh__us_pred.csv")
@@ -170,7 +184,9 @@ data_stan_freshwl_can_prairie <- list(N=nrow(df_canada_fresh),
 								   		as.matrix(df_canada_fresh[, 10:14]), 
 								   		as.matrix(df_canada_fresh[, 17:18])), 
 								   q0 = df_canada_fresh$q0,
-								   q1 = df_canada_fresh$q1)
+								   q1 = df_canada_fresh$q1,
+								   q0new = x_prairieq1q0$q0,
+								   q1new = x_prairieq1q0$q1)
 
 data_stan_freshwl_can_prairie$K <- ncol(data_stan_freshwl_can_prairie$x)
 data_stan_freshwl_can_prairie$xnew <- x_prairie_can

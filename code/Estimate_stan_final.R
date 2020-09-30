@@ -326,6 +326,7 @@ stan_rhat(ma_nonlinear_freshwl_us, pars = c('beta[1]', 'beta[2]', 'beta[3]', 'be
 											 'beta[5]', 'beta[6]', 'beta[7]', 'beta[8]',
 											 'beta[9]', 'beta[10]', 'beta[11]'))
 ###P..........................Benefit Transfer
+21/22
 
  #a) BT Transfer Error
 fit_nonlinear_fresh <- extract(ma_nonlinear_freshwl)
@@ -433,6 +434,7 @@ sask_phjv_predictions %>%
 	theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
 	labs(x = "PHJV Landscape", y = "WTP (CAN$ 2017)")
 
+mean(sask_phjv_predictions$wtp_ypred)
 
 #2) Prairie Historical Wetland Loss
 ma_nonlinear_freshwl_can_pr <-  stan("code/nonlinearMA_bridgesampling_sk.stan", 
