@@ -369,7 +369,8 @@ nonlinfreshwater_TE <- nonlinfreshwater_TE %>%
 nonlinfreshwater_TE <- read_csv("data/nonlinfreshwater_TE.csv")
 nonlinfreshwater_TE <- nonlinfreshwater_TE %>%
 	mutate(TE_bt = (abs(wtp_y - mean(wtp_y)/wtp_y)*100)) %>% View()
-median(nonlinfreshwater_TE$wtp_y)
+ 
+
 
 #nonlinear Freshwater US Meta Function
 nonlinfreshwater_us_TE <- data.frame(cbind(y_prep_nonlinfresh_us, df_canada_fresh$lnwtp))
@@ -430,13 +431,16 @@ nonlinfreshwater_can_sk <- nonlinfreshwater_can_sk %>%
 
 write_csv(nonlinfreshwater_can_sk, "data/sask_phjv_predictions.csv")
 sask_phjv_predictions <- read_csv("data/sask_phjv_predictions.csv")
+phjv_cocations <- read_csv("data/phjv_locations.csv")
 
-nonlinfreshwater_can_sk %>% 
+
+sask_phjv_predictions <- cbind(sask_phjv_predictions,phjv_cocations)
+sask_phjv_predictions %>% 
 	ggplot(aes(x= log(q1) , y = wtp_ypred)) +
 	geom_point() +
 	theme_bw() +
 	labs(x = "Estimated Restoration Wetland Acres", y = "WTP (CAN$ 2017)")
-max(nonlinfreshwater_can_sk$wtp_ypred)
+mean(nonlinfreshwater_can_sk$wtp_ypred)
 
 sask_phjv_predictions %>%
 	ggplot(aes(x= PHJV, y = wtp_ypred)) +
@@ -452,7 +456,7 @@ ma_nonlinear_freshwl_can_pr <-  stan("code/nonlinearMA_bridgesampling_sk.stan",
 									 pars = c( "y_rep"), init = init,
 									 data=data_stan_freshwl_can_prairie, iter=n_iter, chains=n_chains)#, seed = seed) the gamma since it is approximately 0 and causing division by 0 problem in the predictions
 print(ma_nonlinear_freshwl_can_pr)
-wtp_prairie_wetlandloss <- exp(3.37) -1  #28.08
+wtp_prairie_wetlandloss <- exp(3.58) -1  #28.08
 
 
 

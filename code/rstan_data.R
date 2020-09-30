@@ -96,7 +96,7 @@ data_stan_freshwl_sask$Nnew <- nrow(df_us_pred )
 
 ###..................linear Model Prediction Saskatchewan data.................................
 #only freshwetlands
-x_sask <- read_csv("data/phjv_sask.csv")
+x_sask <- read_csv("data/phjv_sask.csv")  
 x_saskq1q0 <- read_csv("data/phjv_sask_q0q1.csv")
 x_sask_can <- read_csv("data/phjv_sask_can.csv")
 
