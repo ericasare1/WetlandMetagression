@@ -5,12 +5,16 @@ lm1 <- lm(lnwtp2 ~ q01 + lnyear + lninc + us +
 		  	prov + reg + cult + 
 		  	forest + 
 		  	volunt + lumpsum, data  = df)
+
 summary(lm1)
 
 lm1 <- lm(lnwtp ~ q01 + lnyear + lninc + #sagulf + nmw + 
 		  	local + prov + reg + cult + forest + 
 		  	volunt + lumpsum + 
 		  	canada, data  = df)
+library(car)
+car::vif(lm1) 
+
 summary(lm1)
 
 lm1 <- lm(lnwtp ~ q_percent + lnyear + lninc + #sagulf + nmw + 

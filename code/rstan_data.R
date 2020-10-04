@@ -192,5 +192,4 @@ data_stan_freshwl_can_prairie$K <- ncol(data_stan_freshwl_can_prairie$x)
 data_stan_freshwl_can_prairie$xnew <- x_prairie_can
 data_stan_freshwl_can_prairie$Nnew <- nrow(x_prairie_can)
 
-colnames(df_canada_fresh)
 
