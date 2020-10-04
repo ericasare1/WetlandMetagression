@@ -11,7 +11,7 @@ p_load(tidyverse, rstan, shinystan, bayesplot, bridgesampling)
 # Import data
 #-----------------------------------------------
 
-df <- read_csv("data/metadata2.csv")
+df <- read_csv("data/fina_data_10_20.csv")
 df %>% View()
 summary(df)
 
@@ -29,7 +29,7 @@ options(mc.cores = parallel::detectCores())
 #--------------------------------------------------------------------
 
 df <- df %>%
-	#	filter(wlfresh == 1) %>%
+	filter(wlfresh == 1) %>%
 	mutate(q0 = q0/1000,
 		   q1 = q1/1000)
 
@@ -39,11 +39,6 @@ df <- df %>%
 		   lnwtp2 = lnwtp - log(q1- q0),
 		   q_change = q1 - q0,
 		   us = ifelse(canada == 1, 0, 1))
-
-#scaling predictor variables except binary variables
-#str(df)
-#df_scaled <- df %>% mutate_at(c("lnyear", "wlfresh", "lninc","q0", "q1" ), ~(scale(.) %>% as.vector))
-#df_scaled %>% View()
 
 #Graph of lnacres vrs lnwtp
 df %>%
@@ -72,7 +67,18 @@ df %>%
 	geom_point() +
 	geom_text(aes(label=canada),hjust=0, vjust=0) + bw()
 summary(df)
-#Bayesia models
+#Bayesian models
+#a)....Checking for multicollinearity with Variance Inflation Factors
+library(car)
+lm1 <- lm(lnwtp ~ q01 + lnyear + lninc + us + 
+		  	local + 
+		  	prov + reg + cult + 
+		  	forest + #q0 + q1 +
+		  	volunt + lumpsum + ce + nrev, data  = df)
+car::vif(lm1) 
+#b) ...Outliers...
+boxplot(df$lnwtp)
+
 source("code/rstan_data.R")
 
 init <- list(gamma = 0.08,
@@ -85,6 +91,7 @@ init <- list(init = init,
 			 init = init)
 
 # Linear model (M3c from Moeltner paper)
+
 ma_linear <- stan("code/linearMA_bridgesampling_us.stan", 
 				  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"), #init = init,
 				  data=data_stan_whole, iter=n_iter, chains=n_chains)#, seed = seed)
