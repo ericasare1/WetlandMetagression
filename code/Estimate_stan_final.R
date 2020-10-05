@@ -79,7 +79,7 @@ car::vif(lm1)
 #b) ...Outliers...
 boxplot(df$lnwtp)
 
-source("code/rstan_data.R")
+#source("code/rstan_data.R")
 
 init <- list(gamma = 0.08,
 			 #	 beta = c(-.5, 0, .2, -0.4, -0.7, 3.1, -2.2, 1.6, -.3, 1.1, -0.02, 1.5),
@@ -92,45 +92,33 @@ init <- list(init = init,
 
 # Linear model (M3c from Moeltner paper)
 
-ma_linear <- stan("code/linearMA_bridgesampling_us.stan", 
-				  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"), #init = init,
-				  data=data_stan_whole, iter=n_iter, chains=n_chains)#, seed = seed)
-ma_linear_freshwl <- stan("code/linearMA_bridgesampling.stan", 
+ma_linear <- stan("code/linearMA_bridgesampling.stan", 
+				  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"), init = init,
+				  data=data_stan_freshwl, iter=n_iter, chains=n_chains)
+ma_linear_us_freshwl <- stan("code/linearMA_bridgesampling.stan", 
 						  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
-						  data=data_stan_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
+						  data=data_stan_us_freshwl, iter=n_iter, chains=n_chains)
 ma_linear_freshwl_can <- stan("code/linearMA_bridgesampling.stan", 
 							  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
-							  data=data_stan_freshwl_can, iter=n_iter, chains=n_chains)#, seed = seed)
-ma_linear_freshwl_us <- stan("code/linearMA_bridgesampling.stan", 
-							  pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
-							  data=data_stan_freshwl_us, iter=n_iter, chains=n_chains)#, seed = seed)
-
+							  data=data_stan_can_freshwl, iter=n_iter, chains=n_chains)
 save(ma_linear, file="output/ma_linear.RData")
-save(ma_linear_freshwl, file="output/ma_linear_freshwl.RData")
+save(ma_linear_us_freshwl, file="output/ma_linear_us_freshwl.RData")
 save(ma_linear_freshwl_can, file="output/ma_linear_freshwl_can.RData")
-save(ma_linear_freshwl_us, file="output/ma_linear_freshwl_us.RData")
 
 ## nonLinear model (M1c from Moeltner paper)
 ma_nonlinear <- stan("code/nonlinearMA_bridgesampling.stan", 
 					 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
-					 data=data_stan_whole, iter=n_iter, chains=n_chains)#, seed = seed)
-ma_nonlinear_freshwl <- stan("code/nonlinearMA_bridgesampling.stan", 
+					 data=data_stan_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
+ma_nonlinear_us_freshwl <- stan("code/nonlinearMA_bridgesampling.stan", 
 							 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
-							 data=data_stan_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
-print(ma_nonlinear_freshwl_can)
-ma_nonlinear_freshwl_can <- stan("code/nonlinearMA_bridgesampling_can.stan", 
-								 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"), #init = init,
-								 data=data_stan_freshwl_can, iter=100, chains=1)#, seed = seed)
-
-ma_nonlinear_freshwl_us <- stan("code/nonlinearMA_bridgesampling.stan", 
-								 pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
-								 data=data_stan_freshwl_us, iter=n_iter, chains=n_chains)#, seed = seed)
+							 data=data_stan_us_freshwl, iter=n_iter, chains=n_chains)#, seed = seed)
+ma_nonlinear_can_freshwl <- stan("code/nonlinearMA_bridgesampling.stan", 
+								pars = c("beta", "sigma", "gamma", "log_lik", "y_rep"),init = init,
+								data=data_stan_can_freshwl, iter=n_iter, chains=n_chains)
 
 save(ma_nonlinear, file="output/ma_nonlinear.RData")
-save(ma_nonlinear_freshwl, file="output/ma_nonlinear_freshwl.RData")
-save(ma_nonlinear_freshwl_can, file="output/ma_nonlinear_freshwl_can.RData")
-save(ma_nonlinear_freshwl_us, file="output/ma_nonlinear_freshwl_us.RData")
-
+save(ma_nonlinear_us_freshwl, file="output/ma_nonlinear_us_freshwl.RData")
+save(ma_nonlinear_can_freshwl, file="output/ma_nonlinear_can_freshwl.RData")
 
 #...................................Posterior Diagnostics....................
 #A. Model comparison: Bayes factor
@@ -138,48 +126,47 @@ library(bridgesampling)
 # compute (log) marginal likelihoods ###
 set.seed(1)
 bridge_lin_whole <- bridge_sampler(ma_linear) #LogML: -166.11
-bridge_lin_freshwl <- bridge_sampler(ma_linear_freshwl)#LogML: -111.01
+bridge_lin_us_freshwl <- bridge_sampler(ma_linear_us_freshwl)#LogML: -111.01
 bridge_lin_freshwl_can <- bridge_sampler(ma_linear_freshwl_can)
-bridge_lin_freshwl_us <- bridge_sampler(ma_linear_freshwl_us) #LogML: -59.86
 
 bridge_nonlin_whole <- bridge_sampler(ma_nonlinear)
-bridge_nonlin_freshwl <- bridge_sampler(ma_nonlinear_freshwl)
-bridge_nonlin_freshwl_can <- bridge_sampler(ma_nonlinear_freshwl_can)
-bridge_nonlin_freshwl_us <- bridge_sampler(ma_nonlinear_freshwl_us)
+bridge_nonlin_us_freshwl <- bridge_sampler(ma_nonlinear_us_freshwl)#LogML: -111.01
+bridge_nonlin_freshwl_can <- bridge_sampler(ma_nonlinear_can_freshwl)
 
 #compute log marginal likelihood
+print(bridge_lin_whole)
 print(bridge_nonlin_whole)
-print(bridge_nonlin_freshwl)
+print(bridge_lin_us_freshwl)
+print(bridge_nonlin_us_freshwl)
+print(bridge_lin_freshwl_can)
 print(bridge_nonlin_freshwl_can)
-print(bridge_nonlin_freshwl_us)
 
 ### compute Bayes factor ###
 bf(bridge_lin_whole, bridge_nonlin_whole) #BF :1.11
-#..Relative Mean Square Errors
-summary(bridge_lin_whole) #rmse : 6.2e-05
-summary(bridge_nonlin_whole) #rmse 6.0e-05
-summary(bridge_lin_freshwl) #rmse 5.79e-05
-summary(bridge_nonlin_freshwl) #rmse 5.10e-05
 
-summary(bridge_nonlin_freshwl)
+#..Relative Mean Square Errors
+summary(bridge_lin_whole)
+summary(bridge_nonlin_whole)
+summary(bridge_lin_us_freshwl)
+summary(bridge_nonlin_us_freshwl)
+summary(bridge_lin_freshwl_can)
 summary(bridge_nonlin_freshwl_can)
-summary(bridge_nonlin_freshwl_us)
 
 # B. model comparison: Loo
 library(loo)
 #Preparing estimated models for LOO Cross Validation checks: https://mc-stan.org/loo/articles/loo2-example.html
-
 loo_whole_lin <- loo(ma_linear, save_psis = TRUE)
-loo_wh_fresh_lin <- loo(ma_linear_freshwl, save_psis = TRUE)
+loo_wh_us_fresh_lin <- loo(ma_linear_us_freshwl, save_psis = TRUE)
+loo_wh_can_fresh_lin <- loo(ma_linear_freshwl_can, save_psis = TRUE)
 
 loo_whole_nonlin <- loo(ma_nonlinear, save_psis = TRUE)
-loo_wh_fresh_nonlin <- loo(ma_nonlinear_freshwl, save_psis = TRUE)
-
+loo_wh_us_fresh_nonlin <- loo(ma_nonlinear_us_freshwl, save_psis = TRUE)
+loo_wh_can_fresh_nonlin <- loo(ma_nonlinear_can_freshwl, save_psis = TRUE)
 
 #Comparing the models on expected log predictive density
 model_com_lin_nonlin <- loo_compare(loo_whole_lin, loo_whole_nonlin) #nonlinear model preferred based on low predictive error based on Loo CV
 
-print(model_com_lin_nonlin, simplify = FALSE)
+print(model_com_lin_nonlin, simplify = FALSE) 
 
 #............Marginal posterior predictive checks
 #1) Extracting predicted dependent values for the models for nonlinear models

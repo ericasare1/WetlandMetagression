@@ -50,7 +50,7 @@ model {
 }
 
 generated quantities {
-  real y_rep[N];
+  real y_rep[Nnew];
   vector[N] log_lik;
   
 
