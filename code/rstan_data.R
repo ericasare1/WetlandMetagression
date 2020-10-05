@@ -74,21 +74,22 @@ x_saskq1q0 <- read_csv("data/phjv_sask_q0q1.csv")
 x_sask_can <- read_csv("data/phjv_sask_can.csv")
 
 n_ind_freshwl <- n_distinct(df_freshwl$studyid)
-data_stan_freshwl_sask <- list(N=nrow(df_freshwl),
+data_stan_can_freshwl_sask <- list(N=nrow(df_can_freshwl),
 						  S = n_ind_freshwl,
-						  lwtp=df_freshwl$lnwtp,
+						  lwtp=df_can_freshwl$lnwtp,
 						  #				  x=as.matrix(df[,6]),
-						  x=cbind(rep(1,nrow(df_freshwl)),as.matrix(df_freshwl[, 5:7]),
-						  		as.matrix(df_freshwl[, 10:14]), as.matrix(df_freshwl[, 17:18]), 
-						  		as.matrix(df_freshwl[,22])),
-						  q0 = df_freshwl$q0,
-						  q1 = df_freshwl$q1,
+						  x=cbind(rep(1,nrow(as.matrix(df_can_freshwl[, 5:6]))),
+						  		as.matrix(df_can_freshwl[, 5:6]),
+						  		as.matrix(df_can_freshwl[, 10:14]), 
+						  		as.matrix(df_can_freshwl[, 17:18])),
+						  q0 = df_can_freshwl$q0,
+						  q1 = df_can_freshwl$q1,
 						  q0new = x_saskq1q0$q0,
 						  q1new = x_saskq1q0$q1)
 
-data_stan_freshwl_sask$K <- ncol(data_stan_freshwl_sask$x)
-data_stan_freshwl_sask$xnew <- x_sask
-data_stan_freshwl_sask$Nnew <- nrow(x_sask)
+data_stan_can_freshwl_sask$K <- ncol(data_stan_can_freshwl_sask$x)
+data_stan_can_freshwl_sask$xnew <- x_sask_can
+data_stan_can_freshwl_sask$Nnew <- nrow(x_sask_can)
 #only freshwetlands and Canada
 n_ind_freshwl_can <- n_distinct(df_canada_fresh$studyid)
 data_stan_freshwl_can_sask <- list(N=nrow(df_canada_fresh),
