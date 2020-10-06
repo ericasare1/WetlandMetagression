@@ -1,10 +1,12 @@
-
+colnames(df)
 #Linear Regression (Frequentist) estimations
-lm1 <- lm(lnwtp2 ~ q01 + lnyear + lninc + us + 
+library(car)
+lm1 <- lm(lnwtp ~ q01 + lnyear + lninc + us + 
 		  	local + 
 		  	prov + reg + cult + 
-		  	forest + 
-		  	volunt + lumpsum, data  = df)
+		  	forest + #q0 + q1 +
+		  	volunt + lumpsum + ce + nrev, data  = df)
+car::vif(lm1) 
 
 summary(lm1)
 
@@ -12,8 +14,7 @@ lm1 <- lm(lnwtp ~ q01 + lnyear + lninc + #sagulf + nmw +
 		  	local + prov + reg + cult + forest + 
 		  	volunt + lumpsum + 
 		  	canada, data  = df)
-library(car)
-car::vif(lm1) 
+
 
 summary(lm1)
 

@@ -271,7 +271,7 @@ y_prep_nonlinfresh_can <- apply(fit_nonlinear_fresh_can$y_rep, 2, mean)
 # TE - Nonlinear 
 nonlinfreshwater_TE <- data.frame(y_prep_nonlinfresh, df_can_freshwl$lnwtp)
 	
-nonlinfreshwater_TE %>%
+all_g <- nonlinfreshwater_TE %>%
 	ggplot(aes(x=df_can_freshwl.lnwtp, y = y_prep_nonlinfresh)) +
 	geom_point() +
 	geom_line(aes(x=df_can_freshwl.lnwtp, y = df_can_freshwl.lnwtp)) + 
@@ -300,7 +300,7 @@ write_csv(TransferErrors_nonlin, "output/tables/TransferErrors_nonlin_10_20.csv"
 #nonlinear Freshwater US Meta Function
 nonlinfreshwater_us_TE <- data.frame(cbind(y_prep_nonlinfresh_us, df_can_freshwl$lnwtp)) %>% rename(lnwtp_y = V2, lnwtp_pred = y_prep_nonlinfresh_us)
 
-nonlinfreshwater_us_TE %>% 
+us_g <- nonlinfreshwater_us_TE %>% 
 	ggplot(aes(x= lnwtp_y, y = lnwtp_pred)) +
 	geom_point() +
 	geom_line(aes(x=lnwtp_y, y = lnwtp_y)) + 
@@ -329,7 +329,7 @@ write_csv(TransferErrors_nonlin_us, "output/tables/TransferErrors_nonlin_us_10_2
 # NonLinear Freshwater Canada Meta Function
 nonlinfreshwater_can_TE <- data.frame(cbind(y_prep_nonlinfresh_can, df_can_freshwl$lnwtp)) %>% rename(lnwtp_y = V2, lnwtp_pred = y_prep_nonlinfresh_can)
 
-nonlinfreshwater_can_TE %>% 
+can_g <- nonlinfreshwater_can_TE %>% 
 	ggplot(aes(x= lnwtp_y, y = lnwtp_pred)) +
 	geom_point() +
 	geom_line(aes(x=lnwtp_y, y = lnwtp_y)) + 
@@ -355,6 +355,7 @@ SummaryTE_nonlin_can <- TransferErrors_nonlin_can %>%
 
 write_csv(TransferErrors_nonlin_can, "output/tables/TransferErrors_nonlin_can_10_20.csv")
 
+#gridExtra::grid.arrange(all_g, us_g, can_g, nrow = 2)
 #b) Policy Application
 #1) Saskachewan - PHJV Landscapes
 phjv_cocations <- read_csv("data/phjv_locations.csv")
